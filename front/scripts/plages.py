@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Télécharge les plages côtières de Bretagne → public/data/plages.geojson
-# Source : « Qualité des sites de baignade » (ministère de la Santé / ARS), data.gouv.fr, Licence Ouverte 2.0
+# Source (liste et position des plages) : « Qualité des sites de baignade » (ministère de la Santé / ARS), data.gouv.fr, Licence Ouverte 2.0
 # https://www.data.gouv.fr/datasets/qualite-des-sites-de-baignade-1
 # Usage : python3 scripts/plages.py
 import csv, io, json, os, urllib.request
@@ -31,7 +31,7 @@ features = [
     {
         "type": "Feature",
         "geometry": {"type": "Point", "coordinates": [round(float(r["longitude"]), 5), round(float(r["latitude"]), 5)]},
-        "properties": {"nom": nom(r["nom_site"]), "commune": r["libelle_geographique"], "qualite": r["qualite"]},
+        "properties": {"nom": nom(r["nom_site"]), "commune": r["libelle_geographique"]},
     }
     for r in csv.DictReader(io.StringIO(text), delimiter=";")
     if r["departement"] in DEPARTEMENTS and r["type_eau_norm"] == "COTIERE" and r["latitude"]

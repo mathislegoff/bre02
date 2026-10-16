@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
-import { CONFIG, couleur } from '../config.js';
+import { CONFIG } from '../config.js';
 
-const icon = (qualite, selected) =>
+const icon = (selected) =>
   L.divIcon({
     className: `marker${selected ? ' selected' : ''}`,
-    html: `<span style="background:${couleur(qualite)}"></span>`,
+    html: '<span></span>',
     iconSize: selected ? [18, 18] : [10, 10],
   });
 
@@ -33,7 +33,7 @@ export default function MapView({ plage, onSelectPlage }) {
       .then((geojson) => {
         L.geoJSON(geojson, {
           pointToLayer: (f, latlng) => {
-            const m = L.marker(latlng, { icon: icon(f.properties.qualite, false), title: f.properties.nom })
+            const m = L.marker(latlng, { icon: icon(false), title: f.properties.nom })
               .bindTooltip(document.createTextNode(f.properties.nom))
               .on('click', () => onSelectPlage(f));
             markers.set(f, m);
@@ -60,10 +60,10 @@ export default function MapView({ plage, onSelectPlage }) {
     const markers = markersRef.current;
     const prev = selectedRef.current;
     if (prev && prev !== plage) {
-      markers.get(prev)?.setIcon(icon(prev.properties.qualite, false)).setZIndexOffset(0);
+      markers.get(prev)?.setIcon(icon(false)).setZIndexOffset(0);
     }
     if (plage) {
-      markers.get(plage)?.setIcon(icon(plage.properties.qualite, true)).setZIndexOffset(1000);
+      markers.get(plage)?.setIcon(icon(true)).setZIndexOffset(1000);
       const [lon, lat] = plage.geometry.coordinates;
       mapRef.current.flyTo([lat, lon], 14, { duration: 1 });
     }

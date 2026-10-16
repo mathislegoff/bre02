@@ -87,7 +87,6 @@ button { font: inherit; color: inherit; }
 
 .plage-head { display: flex; align-items: start; justify-content: space-between; gap: 8px; }
 .side .plage-nom { font-size: var(--fs-lg); }
-.qualite { margin-top: 12px; }
 .close {
   flex: none;
   width: 32px;
@@ -101,14 +100,8 @@ button { font: inherit; color: inherit; }
 }
 .close:hover { color: var(--ink); }
 
-.sq { display: inline-block; width: 10px; height: 10px; margin-right: 8px; }
-
-.legend { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--line); }
-.legend ul { margin-top: 8px; padding: 0; list-style: none; font-size: var(--fs-sm); }
-.legend li { margin: 2px 0; }
-
 /* Marqueurs */
-.marker span { display: block; width: 100%; height: 100%; border: 1px solid #fff; }
+.marker span { display: block; width: 100%; height: 100%; background: var(--ocean); border: 1px solid #fff; }
 .marker.selected span { border: 3px solid var(--ink); }
 
 /* Leaflet : même police que l'appli, pas d'arrondis */
@@ -125,5 +118,4 @@ button { font: inherit; color: inherit; }
     grid-template-areas: 'header' 'map' 'time' 'side';
   }
   .side { border-left: 0; border-top: 1px solid var(--line); padding: 16px; gap: 20px; }
-  .legend ul { display: flex; flex-wrap: wrap; gap: 4px 16px; }
 }

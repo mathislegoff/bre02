@@ -4,7 +4,8 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --open",
+    "prestart": "node -e \"fs.existsSync('node_modules/.bin/vite') || child_process.execSync('npm install', {stdio: 'inherit'})\"",
+    "start": "vite --open",
     "build": "vite build",
     "preview": "vite preview --open",
     "lint": "eslint ."
