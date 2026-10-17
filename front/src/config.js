@@ -4,7 +4,7 @@ import cadre from './cadre.json';
 const data = (f) => `${import.meta.env.BASE_URL}data/${f}`;
 
 export const CONFIG = {
-  name: "BRE02",
+  name: "Riklan",
   logo: `${import.meta.env.BASE_URL}logo.png`,
 
   data: {
@@ -36,3 +36,26 @@ export const CONFIG = {
   // (clair et aéré : le plus foncé reste le bleu de la charte)
   echelle: { max: 8, pas: 0.5, couleurs: ["#f3f9fe", "#d2e8f8", "#9ccbef", "#5ca6e4", "#1f6fd1"] },
 };
+
+// Classement ARS de la qualité de l'eau de baignade (plages.geojson) : couleur + libellé affiché (la couleur ne suffit pas)
+export const QUALITE = {
+  Excellent: "#0c4d7f",
+  Bon: "#2a8fb5",
+  Suffisant: "#dcbf05",
+  Insuffisant: "#98367c",
+};
+export const qualiteCouleur = (q) => QUALITE[q] ?? "#9aa5b4";
+
+// Niveau des vagues selon leur hauteur (m) : repère indicatif, du plat à la très grosse mer. `jusqu` = borne haute
+export const NIVEAUX = [
+  { jusqu: 0.3, nom: "Plat" },
+  { jusqu: 0.8, nom: "Petites vagues" },
+  { jusqu: 1.5, nom: "Vagues moyennes" },
+  { jusqu: 2.5, nom: "Belles vagues" },
+  { jusqu: 4, nom: "Grosses vagues" },
+  { jusqu: Infinity, nom: "Très grosses vagues" },
+];
+export const niveau = (hs) => NIVEAUX.find((n) => hs < n.jusqu);
+
+// Images de la comparaison « sans IA / avec IA » de l'accueil (chemins dans public/ ; null = emplacement vide)
+CONFIG.avantApres = { sans: null, avec: null };

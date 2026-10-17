@@ -76,3 +76,20 @@ export const classe = (m) => Math.min(COULEURS.length - 1, Math.floor(m / pas));
 // Direction (d'où viennent les vagues) → flèche et point cardinal
 const POINTS = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
 export const cardinal = (deg) => POINTS[Math.round(deg / 45) % 8];
+
+// Vagues au plus proche nœud MARC ayant une valeur à l'heure affichée (≤ MAX_KM) :
+// undefined tant que le champ charge, null s'il n'y a rien à proximité, sinon { hs (m), dir (° d'où viennent les vagues), km, noeud }
+const MAX_KM = 15;
+export function vaguesAuPoint(grille, champ, valeurs, lat, lon) {
+  if (!grille || !champ || !valeurs) return undefined;
+  const cos = Math.cos((lat * Math.PI) / 180);
+  let k = -1, d = Infinity;
+  grille.noeuds.forEach(([x, y], i) => {
+    if (valeurs.hs[i] === champ.manquant) return;
+    const e = ((x - lon) * cos) ** 2 + (y - lat) ** 2;
+    if (e < d) { d = e; k = i; }
+  });
+  const km = Math.sqrt(d) * 111.2;
+  if (k < 0 || km > MAX_KM) return null;
+  return { hs: valeur(champ, 'hs', valeurs.hs[k]), dir: valeurs.dir ? valeur(champ, 'dir', valeurs.dir[k]) : null, km, noeud: k };
+}

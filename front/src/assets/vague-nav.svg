@@ -1,0 +1,5 @@
+<svg preserveAspectRatio="none" width="1440" height="110" viewBox="0 0 1440 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+<!-- Bas de la barre de navigation : le blanc de la barre retombe en vague sur la page (fond transparent dessous) -->
+<path d="M0 48C240 88 480 8 720 48C960 88 1200 88 1440 48V0H0V48Z" fill="#96C3EE"/>
+<path d="M0 30C260 62 520 -2 780 32C1040 66 1240 62 1440 26V0H0V30Z" fill="#FFFFFF"/>
+</svg>

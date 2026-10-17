@@ -16,13 +16,20 @@ export const CoucheChamp = L.Layer.extend({
   onAdd(map) {
     this._canvas = L.DomUtil.create('canvas', 'leaflet-zoom-hide');
     this.getPane().appendChild(this._canvas);
-    map.on('moveend zoomend resize', this._dessine, this);
+    map.on('move zoom moveend zoomend resize', this._planifier, this); // move/zoom : suit aussi les flyTo (dézoom d'arrivée)
     this._dessine();
   },
 
   onRemove(map) {
-    map.off('moveend zoomend resize', this._dessine, this);
+    map.off('move zoom moveend zoomend resize', this._planifier, this);
+    cancelAnimationFrame(this._image);
     this._canvas.remove();
+  },
+
+  // Au plus un dessin par image affichée
+  _planifier() {
+    cancelAnimationFrame(this._image);
+    this._image = requestAnimationFrame(() => this._map && this._dessine());
   },
 
   // valeurs : { hs, dir } en octets, un par nœud

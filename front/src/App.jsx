@@ -1,13 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CONFIG } from './config.js';
 import Header from './components/Header.jsx';
+import Accueil from './components/Accueil.jsx';
+import Ocean from './components/Ocean.jsx';
+import Connexion from './components/Connexion.jsx';
+import Footer from './components/Footer.jsx';
 import MapView from './components/MapView.jsx';
 import SidePanel from './components/SidePanel.jsx';
 import Timeline from './components/Timeline.jsx';
 import Graphique from './components/Graphique.jsx';
 import { useJSON } from './lib/donnees.js';
-import { useChampHeure, useSerieNoeud } from './lib/champ.js';
-import { noeudProche } from './lib/grille.js';
+import { useChampHeure, useSerieNoeud, vaguesAuPoint } from './lib/champ.js';
+import { date, formatComplet } from './lib/temps.js';
 
 // Appel au backend PHP ; une réponse d'erreur devient une exception avec le message du serveur
 async function api(url, body, method = body ? 'POST' : 'GET') {
@@ -21,43 +25,101 @@ async function api(url, body, method = body ? 'POST' : 'GET') {
   return data;
 }
 
+// Page affichée, lue dans le # de l'adresse : #/ (accueil), #/carte, #/ocean, #/ocean/amp (ancre dans la page), #/equipe
+function usePage() {
+  const lire = () => {
+    const [page = '', ancre] = location.hash.replace(/^#\/?/, '').split('/');
+    return { page: page || 'accueil', ancre };
+  };
+  const [{ page, ancre }, setLieu] = useState(lire);
+  useEffect(() => {
+    const maj = () => setLieu(lire());
+    window.addEventListener('hashchange', maj);
+    return () => window.removeEventListener('hashchange', maj);
+  }, []);
+  // Après l'affichage : on va à l'ancre demandée, sinon en haut de la page (c'est .page qui défile, pas la fenêtre)
+  useEffect(() => {
+    const cible = ancre && document.getElementById(ancre);
+    if (cible) cible.scrollIntoView();
+    else document.querySelector('.page')?.scrollTo(0, 0);
+  }, [page, ancre]);
+  return page;
+}
+
+function BientotPage({ titre }) {
+  return (
+    <div className="page">
+      <section className="bientot">
+        <h1>{titre}</h1>
+        <p>Cette page arrive bientôt.</p>
+      </section>
+      <Footer />
+    </div>
+  );
+}
+
+const coords = (lat, lon) => `${lat.toFixed(3)}°N ${Math.abs(lon).toFixed(3)}°O`;
+const km = (a, b) => Math.hypot((a.lon - b.lon) * Math.cos((a.lat * Math.PI) / 180), a.lat - b.lat) * 111.2;
+
+// Ce qui est sélectionné sur la carte → { type, cle, nom, sous, lat, lon, f?, pin? } (null si plus rien)
+function resoudre(choix, pins, station) {
+  if (!choix) return null;
+  if (choix.type === 'spot') {
+    const [lon, lat] = choix.f.geometry.coordinates;
+    return { type: 'spot', cle: `s${lat},${lon}`, nom: choix.f.properties.nom, sous: choix.f.properties.commune, lat, lon, f: choix.f };
+  }
+  if (choix.type === 'mer') {
+    const { lat, lon } = choix;
+    return { type: 'mer', cle: `m${lat},${lon}`, nom: 'Point en mer', sous: coords(lat, lon), lat, lon };
+  }
+  if (choix.type === 'bouee') {
+    return station && { type: 'bouee', cle: 'bouee', nom: station.nom, sous: 'Bouée CANDHIS (Cerema), mesures réelles', lat: station.lat, lon: station.lon };
+  }
+  const pin = pins.find((p) => p.id === choix.id); // favori supprimé → plus de sélection
+  return pin && { type: 'favori', cle: `f${pin.id}`, nom: pin.nom, sous: pin.partage_par ? `Favori de ${pin.partage_par}` : 'Mon favori', lat: pin.lat, lon: pin.lon, pin };
+}
+
 export default function App() {
+  const page = usePage();
   const grille = useJSON(CONFIG.data.grille);
   const comparaison = useJSON(CONFIG.data.comparaison);
   const index = useJSON(`${CONFIG.data.champ}index.json`);
   const champ = useMemo(() => index && { ...index, url: CONFIG.data.champ }, [index]);
+  const station = comparaison?.station;
 
   const [heure, setHeure] = useState(0);
-  const [plage, setPlage] = useState(null);
-  const [noeud, setNoeud] = useState(null); // point de mer dont on affiche la courbe
+  const [choix, setChoix] = useState(null); // { type: spot | mer | bouee | favori, … }
   const [utilisateur, setUtilisateur] = useState(null);
   const [pins, setPins] = useState([]);
+  const [connexion, setConnexion] = useState(false); // fenêtre de connexion ouverte ?
+  const [intro, setIntro] = useState(false); // arrivée par « Voir la carte » : la carte se dézoome
 
+  const sel = useMemo(() => resoudre(choix, pins, station), [choix, pins, station]);
   const valeurs = useChampHeure(champ, heure);
-  const serie = useSerieNoeud(champ, noeud);
-  const station = comparaison?.station;
-  const noeudBouee = useMemo(() => grille && station && noeudProche(grille, station.lat, station.lon).noeud, [grille, station]);
+  const heureTexte = `${formatComplet.format(date(heure))} TU`;
 
-  // Courbes { hs, dir } : le champ de la carte partout ; à la bouée, la mesure et MARC au point exact
-  const aLaBouee = noeud != null && noeud === noeudBouee;
-  const brutes = aLaBouee
-    ? { mesure: comparaison.series.mesure, marc: comparaison.series.marc }
-    : { [champ?.source]: serie };
+  // Vagues au point sélectionné (nœud MARC le plus proche), et sa courbe sur l'année
+  const vagues = useMemo(() => sel && vaguesAuPoint(grille, champ, valeurs, sel.lat, sel.lon), [sel, grille, champ, valeurs]);
+  const serie = useSerieNoeud(champ, sel && sel.type !== 'bouee' ? vagues?.noeud ?? null : null);
+
+  // Bouée CANDHIS (Cerema) : mesure à l'heure choisie, et MARC au même point pour comparer
+  const bouee = useMemo(() => {
+    const m = comparaison?.series.mesure;
+    if (!m || m.hs[heure] == null) return null;
+    return { mesure: { hs: m.hs[heure], tp: m.tp?.[heure] ?? null, dir: m.dir?.[heure] ?? null, km: null }, marc: comparaison.series.marc?.hs[heure] ?? null };
+  }, [comparaison, heure]);
+
+  // Courbes { hs, dir } : le champ de la carte ; à la bouée, la mesure et MARC au point exact
+  const brutes = sel?.type === 'bouee' ? { mesure: comparaison.series.mesure, marc: comparaison.series.marc } : { [champ?.source]: serie };
   const series = Object.entries(CONFIG.series)
     .filter(([k, s]) => s.visible && brutes[k]?.hs)
     .map(([k, s]) => ({ k, ...s, v: brutes[k].hs, dir: brutes[k].dir }));
 
-  let titre = 'Hauteur des vagues';
-  if (aLaBouee) titre += ` · ${station.nom}`;
-  else if (noeud != null && grille) {
-    const [lon, lat] = grille.noeuds[noeud];
-    titre += ` · ${lat.toFixed(3)}°N ${Math.abs(lon).toFixed(3)}°O`;
-  }
+  // Favori déjà posé à moins de 100 m du point sélectionné : pas de doublon
+  const favoriProche = sel && !sel.pin ? pins.find((p) => !p.partage_par && km(p, sel) < 0.1) : null;
 
-  const fermerPlage = useCallback(() => setPlage(null), []);
-  const fermerGraphique = useCallback(() => setNoeud(null), []);
-  const choisirBouee = useCallback(() => setNoeud(noeudBouee), [noeudBouee]);
-  const clicMer = useCallback((p) => grille && setNoeud(noeudProche(grille, p.lat, p.lng).noeud), [grille]);
+  const fermer = useCallback(() => setChoix(null), []);
+  const selectFavori = useCallback((id) => setChoix({ type: 'favori', id }), []);
 
   const recharger = useCallback(() => api('/pins.php').then(setPins).catch(console.error), []);
 
@@ -84,74 +146,89 @@ export default function App() {
   }, [utilisateur, recharger]);
 
   const compte = (action, nom, mdp) => api('/auth.php', { action, nom, mdp }).then((d) => entrer(d.utilisateur));
+  const ouvrirConnexion = useCallback(() => setConnexion(true), []);
+  const fermerConnexion = useCallback(() => setConnexion(false), []);
+  // Depuis la fenêtre de connexion : elle se referme dès que le compte est ouvert
+  const compteDepuisFenetre = (...args) => compte(...args).then(fermerConnexion);
 
-  const ajouterPin = useCallback((latlng) => {
-    const nom = prompt('Nom du favori ?')?.trim();
-    if (!nom) return;
-    api('/pins.php', { nom, lat: latlng.lat, lon: latlng.lng })
-      .then((pin) => setPins((p) => [...p, pin]))
-      .catch((e) => alert(e.message));
-  }, []);
-
-  const supprimerPin = (id) =>
-    api(`/pins.php?id=${id}`, undefined, 'DELETE')
-      .then(() => setPins((p) => p.filter((x) => x.id !== id)))
-      .catch((e) => alert(e.message));
-
-  // Partage : on recharge depuis le serveur, qui renvoie les noms exacts des collègues
-  const partager = (id) => {
-    const avec = prompt('Partager avec (nom du compte du collègue) :')?.trim();
-    if (avec) api('/partages.php', { pin_id: id, avec }).then(recharger).catch((e) => alert(e.message));
+  // Actions sur les favoris. Ajout et partage renvoient la promesse : le formulaire affiche l'erreur du serveur
+  const favoris = {
+    utilisateur,
+    pins,
+    favoriProche,
+    onSelectFavori: selectFavori,
+    onConnexion: ouvrirConnexion,
+    onAjouter: (nom) =>
+      api('/pins.php', { nom, lat: sel.lat, lon: sel.lon }).then((pin) => {
+        setPins((p) => [...p, pin]);
+        selectFavori(pin.id);
+      }),
+    onPartager: (id, avec) => api('/partages.php', { pin_id: id, avec }).then(recharger),
+    onRetirerPartage: (id, avec) =>
+      api(`/partages.php?pin_id=${id}&avec=${encodeURIComponent(avec)}`, undefined, 'DELETE').then(recharger).catch((e) => alert(e.message)),
+    onNoter: (id, etoiles, ressenti) =>
+      api(`/pins.php?id=${id}`, { etoiles, ressenti }, 'PATCH')
+        .then(({ note_le }) => setPins((p) => p.map((x) => (x.id === id ? { ...x, etoiles, ressenti, note_le } : x))))
+        .catch((e) => alert(e.message)),
+    onSupprimer: (id) =>
+      confirm('Supprimer ce favori, sa note et ses partages ?') &&
+      api(`/pins.php?id=${id}`, undefined, 'DELETE')
+        .then(() => setPins((p) => p.filter((x) => x.id !== id)))
+        .catch((e) => alert(e.message)),
   };
 
-  const retirerPartage = (id, avec) =>
-    api(`/partages.php?pin_id=${id}&avec=${encodeURIComponent(avec)}`, undefined, 'DELETE')
-      .then(recharger)
-      .catch((e) => alert(e.message));
+  // « Voir la carte » : ouvre la page de la carte, qui se dézoome à l'arrivée (une seule fois)
+  const voirCarte = () => {
+    setIntro(true);
+    location.hash = '#/carte';
+  };
+  const introJouee = useCallback(() => setIntro(false), []);
 
-  const noter = (id, etoiles, ressenti) =>
-    api(`/pins.php?id=${id}`, { etoiles, ressenti }, 'PATCH')
-      .then(({ note_le }) => setPins((p) => p.map((x) => (x.id === id ? { ...x, etoiles, ressenti, note_le } : x))))
-      .catch((e) => alert(e.message));
-
-  return (
-    <div className={`app${noeud != null ? ' avec-graph' : ''}`}>
-      <Header />
+  const carte = (
+    <div className={`app${sel ? ' avec-graph' : ''}`}>
       <MapView
         grille={grille}
         champ={champ}
         valeurs={valeurs}
-        plage={plage}
-        onSelectPlage={setPlage}
         station={station}
-        onSelectStation={choisirBouee}
-        noeud={noeud}
-        onClickMer={clicMer}
         pins={pins}
-        onAddPin={utilisateur ? ajouterPin : null}
+        sel={sel}
+        onSelect={setChoix}
+        intro={intro}
+        onIntroJouee={introJouee}
       />
       <Timeline heure={heure} setHeure={setHeure} />
-      {noeud != null && (
+      {sel && (
         <Graphique
-          titre={titre}
+          titre={`Hauteur des vagues · ${sel.nom}`}
           series={series}
-          attente={!aLaBouee && !!champ && !serie}
+          attente={sel.type !== 'bouee' && !!champ && !serie}
           heure={heure}
           setHeure={setHeure}
-          onClose={fermerGraphique}
+          onClose={fermer}
         />
       )}
-      <SidePanel
-        plage={plage}
-        onClose={fermerPlage}
-        utilisateur={utilisateur}
-        pins={pins}
-        onCompte={compte}
-        onSupprimerPin={supprimerPin}
-        onPartager={partager}
-        onRetirerPartage={retirerPartage}
-        onNoter={noter}
-      />
+      <SidePanel sel={sel} vagues={vagues} bouee={bouee} heureTexte={heureTexte} onClose={fermer} {...favoris} />
+    </div>
+  );
+
+  const nav = { utilisateur, onCompte: compte, onConnexion: ouvrirConnexion };
+  return (
+    <div className="site">
+      {connexion && <Connexion onCompte={compteDepuisFenetre} onFermer={fermerConnexion} />}
+      {page === 'accueil' ? (
+        // Présentation, sans barre de navigation
+        <div className="page">
+          <Accueil onVoirCarte={voirCarte} />
+        </div>
+      ) : (
+        <>
+          <Header page={page} {...nav} />
+          {page === 'carte' && <main className="page-carte">{carte}</main>}
+          {page === 'ocean' && <Ocean />}
+          {page === 'equipe' && <BientotPage titre="Équipe & RGPD" />}
+        </>
+      )}
     </div>
   );
 }
