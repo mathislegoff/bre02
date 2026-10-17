@@ -10,7 +10,8 @@ const LIENS = [
 ];
 
 // Barre de navigation commune à toutes les pages (maquette Figma « Barre de navigation »), terminée par une vague
-export default function Header({ page, utilisateur, onCompte, onConnexion }) {
+// children : boutons propres à la page (menu des favoris sur la carte), à gauche du compte
+export default function Header({ page, utilisateur, onCompte, onConnexion, children }) {
   return (
     <header className="header">
       <div className="marque-menu">
@@ -26,7 +27,7 @@ export default function Header({ page, utilisateur, onCompte, onConnexion }) {
           ))}
         </nav>
       </div>
-      <BoutonsCompte utilisateur={utilisateur} onCompte={onCompte} onConnexion={onConnexion} />
+      <BoutonsCompte utilisateur={utilisateur} onCompte={onCompte} onConnexion={onConnexion}>{children}</BoutonsCompte>
       <img className="vague-nav" src={vague} alt="" />
     </header>
   );
@@ -34,10 +35,11 @@ export default function Header({ page, utilisateur, onCompte, onConnexion }) {
 
 // Compte : une seule icône (la fenêtre propose connexion et création de compte), ou le nom + déconnexion.
 // Icônes dans src/assets/icones/ (à remplacer par les versions en pâte à modeler) ; le texte reste pour les lecteurs d'écran
-function BoutonsCompte({ utilisateur, onCompte, onConnexion }) {
+function BoutonsCompte({ utilisateur, onCompte, onConnexion, children }) {
   if (utilisateur) {
     return (
       <div className="compte-nav">
+        {children}
         <span className="mini">{utilisateur.nom}</span>
         <button className="btn-icone" onClick={() => onCompte('deconnexion').catch(console.error)} title="Se déconnecter" aria-label="Se déconnecter">
           <img src={iconeDeconnexion} alt="" />
@@ -47,6 +49,7 @@ function BoutonsCompte({ utilisateur, onCompte, onConnexion }) {
   }
   return (
     <div className="compte-nav">
+      {children}
       <button className="btn-icone" onClick={onConnexion} title="Se connecter ou créer un compte" aria-label="Se connecter ou créer un compte">
         <img src={iconeConnexion} alt="" />
       </button>

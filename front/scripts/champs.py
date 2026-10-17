@@ -25,7 +25,7 @@ CHAMPS = os.path.join(HERE, "..", "public", "data", "champs")
 MAX_KM = 10
 MANQUANT = 255
 # Pas de quantification : 1 octet → 0 à 254 × échelle
-ECHELLES = {"hs": (0.05, "m"), "tp": (0.1, "s"), "dir": (2, "°")}
+ECHELLES = {"hs": (0.05, "m"), "tp": (0.1, "s"), "dir": (2, "°"), "eau": (0.05, "m"), "vent": (0.5, "nds")}
 
 
 def noeuds():

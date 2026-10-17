@@ -7,12 +7,11 @@ import Communaute from './components/Communaute.jsx';
 import Connexion from './components/Connexion.jsx';
 import Footer from './components/Footer.jsx';
 import MapView from './components/MapView.jsx';
-import SidePanel from './components/SidePanel.jsx';
+import SidePanel, { MenuFavoris } from './components/SidePanel.jsx';
 import Timeline from './components/Timeline.jsx';
 import Graphique from './components/Graphique.jsx';
 import { useJSON } from './lib/donnees.js';
 import { useChampHeure, useSerieNoeud, vaguesAuPoint } from './lib/champ.js';
-import { date, formatComplet } from './lib/temps.js';
 import { api } from './lib/api.js';
 
 // Page affichée, lue dans le # de l'adresse : #/ (accueil), #/carte, #/ocean, #/ocean/amp (ancre dans la page), #/communaute
@@ -71,10 +70,12 @@ export default function App() {
   const [pins, setPins] = useState([]);
   const [connexion, setConnexion] = useState(false); // fenêtre de connexion ouverte ?
   const [intro, setIntro] = useState(false); // arrivée par « Voir la carte » : la carte se dézoome
+  const [graph, setGraph] = useState(false); // courbe sous la carte, ouverte depuis la fiche (« Voir sur l'année »)
 
   const sel = useMemo(() => resoudre(choix, pins, station), [choix, pins, station]);
+  // Autre point choisi pendant que la courbe est ouverte : elle reste ouverte ou se referme ?
+  // TODO(human)
   const valeurs = useChampHeure(champ, heure);
-  const heureTexte = `${formatComplet.format(date(heure))} TU`;
 
   // Houle au point sélectionné (nœud MARC le plus proche), et sa courbe sur l'année
   const vagues = useMemo(() => sel && vaguesAuPoint(grille, champ, valeurs, sel.lat, sel.lon), [sel, grille, champ, valeurs]);
@@ -97,6 +98,7 @@ export default function App() {
   const favoriProche = sel && !sel.pin ? pins.find((p) => !p.partage_par && km(p, sel) < 0.1) : null;
 
   const fermer = useCallback(() => setChoix(null), []);
+  const fermerGraph = useCallback(() => setGraph(false), []);
   const selectFavori = useCallback((id) => setChoix({ type: 'favori', id }), []);
 
   const recharger = useCallback(() => api('/pins.php').then(setPins).catch(console.error), []);
@@ -148,6 +150,9 @@ export default function App() {
       api(`/pins.php?id=${id}`, { etoiles, ressenti }, 'PATCH')
         .then(({ note_le }) => setPins((p) => p.map((x) => (x.id === id ? { ...x, etoiles, ressenti, note_le } : x))))
         .catch((e) => alert(e.message)),
+    // alerte : { eau, houle, vent }, ou null pour la retirer. Renvoie la promesse : le formulaire affiche l'erreur
+    onAlerte: (id, alerte) =>
+      api(`/pins.php?id=${id}`, { alerte }, 'PATCH').then(() => setPins((p) => p.map((x) => (x.id === id ? { ...x, alerte } : x)))),
     onSupprimer: (id) =>
       confirm('Supprimer ce favori, sa note et ses partages ?') &&
       api(`/pins.php?id=${id}`, undefined, 'DELETE')
@@ -163,7 +168,7 @@ export default function App() {
   const introJouee = useCallback(() => setIntro(false), []);
 
   const carte = (
-    <div className={`app${sel ? ' avec-graph' : ''}`}>
+    <div className={`app${sel ? ' avec-fiche' : ''}${sel && graph ? ' avec-graph' : ''}`}>
       <MapView
         grille={grille}
         champ={champ}
@@ -176,17 +181,17 @@ export default function App() {
         onIntroJouee={introJouee}
       />
       <Timeline heure={heure} setHeure={setHeure} />
-      {sel && (
+      {sel && graph && (
         <Graphique
           titre={`Hauteur de la houle · ${sel.nom}`}
           series={series}
           attente={sel.type !== 'bouee' && !!champ && !serie}
           heure={heure}
           setHeure={setHeure}
-          onClose={fermer}
+          onClose={fermerGraph}
         />
       )}
-      <SidePanel sel={sel} vagues={vagues} bouee={bouee} heureTexte={heureTexte} onClose={fermer} {...favoris} />
+      {sel && <SidePanel sel={sel} vagues={vagues} bouee={bouee} serie={serie} heure={heure} graph={graph} onGraph={() => setGraph(true)} onClose={fermer} {...favoris} />}
     </div>
   );
 
@@ -201,7 +206,7 @@ export default function App() {
         </div>
       ) : (
         <>
-          <Header page={page} {...nav} />
+          <Header page={page} {...nav}>{page === 'carte' && <MenuFavoris sel={sel} {...favoris} />}</Header>
           {page === 'carte' && <main className="page-carte">{carte}</main>}
           {page === 'ocean' && <Ocean />}
           {page === 'communaute' && <Communaute utilisateur={utilisateur} onConnexion={ouvrirConnexion} />}

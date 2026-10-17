@@ -1,0 +1,19 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="44" height="25" viewBox="0 0 44 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Interrupteur">
+<path d="M0 12C0 5.37258 5.37258 0 12 0H32C38.6274 0 44 5.37258 44 12V12C44 18.6274 38.6274 24 32 24H12C5.37258 24 0 18.6274 0 12V12Z" fill="#868397"/>
+<g id="bouton" filter="url(#filter0_d_0_192)">
+<circle cx="12" cy="12" r="10" fill="white"/>
+</g>
+</g>
+<defs>
+<filter id="filter0_d_0_192" x="0" y="1" width="24" height="24" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="1"/>
+<feGaussianBlur stdDeviation="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_0_192"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_0_192" result="shape"/>
+</filter>
+</defs>
+</svg>

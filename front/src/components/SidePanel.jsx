@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { quand } from '../lib/date.js';
 import { AiresProtegees, MesuresBouee, QualiteEau, Vagues } from './InfosSpot.jsx';
+import Alerte from './Alerte.jsx';
 
 // Note de 1 à 5 : boutons si onChange (mon favori), simple affichage sinon (favori d'un collègue)
 // Pleine ★ / vide ☆ : la forme change, pas seulement la couleur
@@ -123,7 +124,9 @@ function NotesFavori({ pin, onNoter, onPartager, onRetirerPartage, onSupprimer }
 }
 
 // Fiche de ce qui est sélectionné sur la carte : spot, point en mer, bouée ou favori
-function Fiche({ sel, vagues, bouee, heureTexte, onClose, ...favoris }) {
+// L'heure n'y est pas répétée : elle est sur la frise du temps
+// serie : houle, eau et vent du point sur toute la période, pour l'alerte d'un de mes favoris
+function Fiche({ sel, vagues, bouee, serie, heure, graph, onGraph, onClose, ...favoris }) {
   const closeRef = useRef(null);
 
   // Focus sur « Fermer » à chaque nouvelle sélection, Échap pour fermer
@@ -146,10 +149,15 @@ function Fiche({ sel, vagues, bouee, heureTexte, onClose, ...favoris }) {
       </div>
 
       {sel.type === 'bouee' ? (
-        <MesuresBouee mesure={bouee?.mesure ?? null} marc={bouee?.marc ?? null} quand={heureTexte} />
+        <MesuresBouee mesure={bouee?.mesure ?? null} marc={bouee?.marc ?? null} />
       ) : (
-        <Vagues vagues={vagues} quand={heureTexte} />
+        <Vagues vagues={vagues} />
       )}
+      {sel.pin && !sel.pin.partage_par && (
+        <Alerte key={sel.pin.id} pin={sel.pin} serie={serie} heure={heure} onAlerte={favoris.onAlerte} />
+      )}
+      {/* Figma « Panneau spot » : bouton principal « Voir le détail » ; ici, le détail est la courbe sous la carte */}
+      {!graph && <button className="btn" onClick={onGraph}>Voir le détail</button>}
       {props && (
         <>
           <QualiteEau qualite={props.qualite} />
@@ -162,7 +170,7 @@ function Fiche({ sel, vagues, bouee, heureTexte, onClose, ...favoris }) {
   );
 }
 
-// Liste des favoris : un clic sélectionne le favori (sa fiche s'ouvre au-dessus, la carte y va)
+// Liste des favoris : un clic sélectionne le favori (sa fiche s'ouvre, la carte y va)
 function Favoris({ utilisateur, pins, sel, onSelectFavori, onConnexion }) {
   if (!utilisateur) {
     return (
@@ -189,14 +197,23 @@ function Favoris({ utilisateur, pins, sel, onSelectFavori, onConnexion }) {
   );
 }
 
-export default function SidePanel({ sel, vagues, bouee, heureTexte, onClose, ...favoris }) {
+// Menu de la barre de navigation (popover natif : se ferme à Échap, en cliquant ailleurs, ou au choix d'un favori)
+export function MenuFavoris({ pins, ...props }) {
+  return (
+    <>
+      <button className="btn btn-secondaire" popoverTarget="menu-favoris">★ Mes favoris{pins.length > 0 && ` (${pins.length})`}</button>
+      <div id="menu-favoris" className="menu-favoris" popover="auto" onClick={(e) => e.target.closest('button') && e.currentTarget.hidePopover()}>
+        <Favoris pins={pins} {...props} />
+      </div>
+    </>
+  );
+}
+
+// Panneau affiché seulement quand quelque chose est sélectionné sur la carte
+export default function SidePanel(props) {
   return (
     <aside className="side">
-      {sel && <Fiche sel={sel} vagues={vagues} bouee={bouee} heureTexte={heureTexte} onClose={onClose} {...favoris} />}
-      <section>
-        <h2>Mes favoris</h2>
-        <Favoris sel={sel} {...favoris} />
-      </section>
+      <Fiche {...props} />
     </aside>
   );
 }

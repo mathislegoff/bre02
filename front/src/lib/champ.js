@@ -8,6 +8,8 @@ import { chargeOctets } from './donnees.js';
 export const valeur = (champ, param, q) => (q === champ.manquant ? null : q * champ.params[param].echelle);
 
 const params = (champ) => Object.keys(champ.params);
+// La carte n'affiche que la houle : eau et vent (alertes) arrivent avec la série du point sélectionné
+const paramsCarte = (champ) => params(champ).filter((p) => p === 'hs' || p === 'dir');
 
 // La carte charge un jour entier (24 h × nœuds) à la fois ; on garde les derniers jours en mémoire
 const jours = new Map();
@@ -32,19 +34,19 @@ export function useChampHeure(champ, heure) {
     const j = Math.floor(heure / 24);
     const h = heure - j * 24;
     const n = champ.noeuds;
-    Promise.all(params(champ).map((p) => jour(champ, p, j)))
+    Promise.all(paramsCarte(champ).map((p) => jour(champ, p, j)))
       .then((blocs) => {
         if (!actif) return;
-        setValeurs(Object.fromEntries(params(champ).map((p, k) => [p, blocs[k].subarray(h * n, (h + 1) * n)])));
+        setValeurs(Object.fromEntries(paramsCarte(champ).map((p, k) => [p, blocs[k].subarray(h * n, (h + 1) * n)])));
       })
       .catch((e) => console.error('Champ de houle :', e));
-    if ((j + 1) * 24 < champ.heures) params(champ).forEach((p) => jour(champ, p, j + 1).catch(() => {})); // pour la lecture
+    if ((j + 1) * 24 < champ.heures) paramsCarte(champ).forEach((p) => jour(champ, p, j + 1).catch(() => {})); // pour la lecture
     return () => { actif = false; };
   }, [champ, heure]);
   return valeurs;
 }
 
-// Séries d'un nœud sur toute la période : { hs: [m | null], dir: [° | null] }
+// Séries d'un nœud sur toute la période, une par paramètre du champ : { hs: [m | null], dir: [° | null], eau?, vent? }
 export function useSerieNoeud(champ, noeud) {
   const [serie, setSerie] = useState(null);
   useEffect(() => {

@@ -14,7 +14,7 @@ export default function Accueil({ onVoirCarte, comparaison }) {
       <section className="hero">
         <img className="logo-hero" src={CONFIG.logo} alt="" />
         <h1>{CONFIG.name}</h1>
-        <p className="accroche">Prévoir la houle, surfer ensemble, protéger l’océan.</p>
+        <p className="accroche">Des prévisions de vagues par IA, pour surfer sans abîmer l'océan</p>
       
         <button className="btn-carte" onClick={onVoirCarte}>
           Voir la carte

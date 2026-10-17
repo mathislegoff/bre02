@@ -45,6 +45,7 @@ export default function MapView({ grille, champ, valeurs, station, pins, sel, on
   const ref = useRef(null);
   const mapRef = useRef(null);
   const pinsRef = useRef(null);
+  const boueeRef = useRef(null);
   const markersRef = useRef(new Map());
   const spotRef = useRef(null);
   const coucheRef = useRef(null);
@@ -83,6 +84,14 @@ export default function MapView({ grille, champ, valeurs, station, pins, sel, on
     zoom();
     mapRef.current = map;
     pinsRef.current = L.layerGroup().addTo(map);
+    boueeRef.current = L.layerGroup().addTo(map);
+    const spots = L.featureGroup().addTo(map);
+    // Cases à cocher par couche, qui servent aussi de légende des symboles (libellés fixes, pas de saisie utilisateur)
+    L.control.layers(null, {
+      [`<img src="${imgPublic}" alt=""> Spots`]: spots,
+      [`<img src="${imgPrive}" alt=""> Mes favoris`]: pinsRef.current,
+      '<i class="bouee"><span></span></i> Bouée': boueeRef.current,
+    }, { collapsed: false }).addTo(map);
 
     const markers = markersRef.current;
     const controller = new AbortController();
@@ -107,7 +116,7 @@ export default function MapView({ grille, champ, valeurs, station, pins, sel, on
             markers.set(f, m);
             return m;
           },
-        }).addTo(map);
+        }).addTo(spots);
       }),
     ];
     Promise.all(fonds)
@@ -165,8 +174,8 @@ export default function MapView({ grille, champ, valeurs, station, pins, sel, on
     })
       .bindTooltip(document.createTextNode(`${station.nom} · CANDHIS (Cerema)`), { direction: 'right', offset: [10, 0] })
       .on('click', () => rappel.current({ type: 'bouee' }))
-      .addTo(mapRef.current);
-    m.getElement()?.setAttribute('aria-label', station.nom);
+      .on('add', (e) => e.target.getElement()?.setAttribute('aria-label', station.nom)) // à chaque réaffichage de la couche
+      .addTo(boueeRef.current);
     return () => m.remove();
   }, [station]);
 

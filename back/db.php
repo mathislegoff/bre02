@@ -48,6 +48,12 @@ if ($version < 2) {
     $db->exec("UPDATE pins SET note_le = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE etoiles IS NOT NULL OR ressenti <> ''");
     $db->exec('PRAGMA user_version = 2');
 }
+if ($version < 3) {
+    // Alertes d'un favori, en JSON (vérifié par pins.php) : {houle: [min, max] m, vent: max nds, eau: [min, max] m,
+    // actives: [houle, vent, eau…]} ; null = jamais réglées
+    $db->exec('ALTER TABLE pins ADD COLUMN alerte TEXT');
+    $db->exec('PRAGMA user_version = 3');
+}
 
 // Communautés et sorties
 require __DIR__ . '/schema_communaute.php';

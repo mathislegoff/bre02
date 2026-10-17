@@ -105,7 +105,10 @@ export function Vagues({ vagues, quand, source = 'MARC', compact }) {
           <div>
             <strong>{maj(sens(dir))} · {Math.round(dir)}°</strong>
             {vagues.tp != null && <p>Période pic : {fmt(vagues.tp)} s</p>}
-            <p className="muted">Direction d’où vient la houle (la flèche montre où elle va).{vagues.km != null && ` Point MARC à ${Math.round(vagues.km)} km.`}</p>
+            <details className="aide">
+              <summary>Lire la flèche</summary>
+              <p className="muted">Direction d’où vient la houle (la flèche montre où elle va).{vagues.km != null && ` Point MARC à ${Math.round(vagues.km)} km.`}</p>
+            </details>
           </div>
         </div>
       )}
