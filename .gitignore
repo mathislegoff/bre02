@@ -9,3 +9,4 @@ front/scripts/sources/carte-shom-7066.png
 # Champs de vagues (≈ 80 Mo par fichier) : régénérer avec scripts/marc.py (et scripts/champs.py pour l’IA)
 front/public/data/champs/*/*.bin
 __pycache__/
+back/data/*.sqlite

@@ -4,6 +4,7 @@ import { CONFIG } from '../config.js';
 import { chargeJSON } from '../lib/donnees.js';
 import { aretes } from '../lib/grille.js';
 import { CoucheChamp } from '../lib/CoucheChamp.js';
+import { quand } from '../lib/date.js';
 
 const icon = (selected) =>
   L.divIcon({
@@ -14,9 +15,12 @@ const icon = (selected) =>
 
 const versLatLon = (anneaux) => anneaux.map(([lon, lat]) => [lat, lon]);
 
-export default function MapView({ grille, champ, valeurs, plage, onSelectPlage, station, onSelectStation, noeud, onClickMer }) {
+const pinIcon = (partage) => L.divIcon({ className: `pin${partage ? ' partage' : ''}`, html: '<span></span>', iconSize: [14, 14] });
+
+export default function MapView({ grille, champ, valeurs, plage, onSelectPlage, station, onSelectStation, noeud, onClickMer, pins, onAddPin }) {
   const ref = useRef(null);
   const mapRef = useRef(null);
+  const pinsRef = useRef(null);
   const markersRef = useRef(new Map());
   const selectedRef = useRef(null);
   const coucheRef = useRef(null);
@@ -45,6 +49,7 @@ export default function MapView({ grille, champ, valeurs, plage, onSelectPlage, 
     map.createPane('champ').style.zIndex = 350; // sous la terre (overlayPane = 400)
     map.on('click', (e) => rappels.current.onClickMer(e.latlng));
     mapRef.current = map;
+    pinsRef.current = L.layerGroup().addTo(map);
 
     const markers = markersRef.current;
     const controller = new AbortController();
@@ -147,6 +152,32 @@ export default function MapView({ grille, champ, valeurs, plage, onSelectPlage, 
     }
     selectedRef.current = plage;
   }, [plage]);
+
+  // Favoris de l'utilisateur (le nom est saisi par lui : createTextNode, jamais interprété comme du HTML)
+  useEffect(() => {
+    const layer = pinsRef.current;
+    layer.clearLayers();
+    for (const p of pins) {
+      // Ligne 1 : nom, étoiles, auteur si partagé · ligne 2 : date et ressenti
+      const etoiles = p.etoiles ? ` ${'★'.repeat(p.etoiles)}` : '';
+      const auteur = p.partage_par ? ` · ${p.partage_par}` : '';
+      const ressenti = p.ressenti ? ` : « ${p.ressenti} »` : '';
+      const note = p.note_le ? `\n${quand(p.note_le)}${ressenti}` : '';
+      const texte = `${p.nom}${etoiles}${auteur}${note}`;
+      L.marker([p.lat, p.lon], { icon: pinIcon(p.partage_par), title: texte, zIndexOffset: 500 })
+        .bindTooltip(document.createTextNode(texte), { className: 'pin-tip' })
+        .addTo(layer);
+    }
+  }, [pins]);
+
+  // Clic droit (appui long sur mobile) → nouveau favori, seulement si connecté
+  useEffect(() => {
+    if (!onAddPin) return;
+    const map = mapRef.current;
+    const add = (e) => onAddPin(e.latlng);
+    map.on('contextmenu', add);
+    return () => map.off('contextmenu', add);
+  }, [onAddPin]);
 
   return (
     <div className="map-wrap">

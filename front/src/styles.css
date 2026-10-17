@@ -9,6 +9,9 @@
   --violet: #9b3fa6;
   --jaune: #f5c400;
   --rayon: 8px;
+  --pin: #e8833a;
+  --erreur: #c0392b;
+  --etoile: #c48a00; /* contraste 3:1 sur blanc */
 
   /* Texte : Archivo (libre, OFL), trois tailles. Titre : Bagel Fat One, ronde façon pâte à modeler */
   --fs-sm: 13px;
@@ -175,10 +178,35 @@ button { font: inherit; color: inherit; }
 
 
 
+/* Compte et favoris */
+.compte { display: grid; gap: 8px; margin-top: 8px; }
+.compte input { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: var(--rayon); }
+.compte-actions { display: flex; gap: 8px; }
+.compte-actions button { flex: 1; padding: 6px 8px; border: 1px solid var(--ocean); border-radius: var(--rayon); background: none; color: var(--ocean); cursor: pointer; }
+.compte-actions .primaire { background: var(--ocean); color: #fff; }
+.erreur { color: var(--erreur); font-size: var(--fs-sm); }
+.lien { padding: 0; border: 0; background: none; color: var(--ocean); text-decoration: underline; cursor: pointer; }
+.pins { list-style: none; padding: 0; margin-top: 8px; }
+.pins li { padding: 4px 0; border-bottom: 1px solid var(--line); }
+.pin-ligne { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 32px; }
+.tag { margin: 0 4px 0 0; padding: 0 6px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); font-size: var(--fs-sm); cursor: pointer; }
+.tag:hover { border-color: var(--ink); }
+.etoiles { display: inline-flex; color: var(--etoile); font-size: 18px; line-height: 1; }
+.etoiles .vide { color: var(--muted); }
+.etoiles button { padding: 0 2px; border: 0; background: none; color: var(--etoile); font-size: inherit; cursor: pointer; }
+.etoiles button.vide { color: var(--muted); }
+.etoiles button:hover { transform: scale(1.2); }
+.ressenti { display: block; width: 100%; margin: 4px 0; padding: 4px 6px; border: 1px solid var(--line); font: inherit; font-size: var(--fs-sm); resize: vertical; }
+.ressenti-lu { margin: 4px 0; font-size: var(--fs-sm); font-style: italic; }
+.note-ligne { display: flex; align-items: center; gap: 8px; }
+.pin-tip { white-space: pre-line; max-width: 260px; } /* \n = retour à la ligne, ressenti long replié */
+
 /* Marqueurs */
 .marker span { display: block; width: 100%; height: 100%; background: #fff; border: 2px solid var(--ink); border-radius: 50%; }
 .marker.selected span { background: var(--jaune); }
 .bouee span { display: block; width: 100%; height: 100%; background: var(--ink); border: 3px solid #fff; border-radius: 4px; outline: 1px solid var(--ink); }
+.pin span { display: block; width: 100%; height: 100%; background: var(--pin); border: 2px solid #fff; transform: rotate(45deg); }
+.pin.partage span { background: var(--violet); }
 
 /* Leaflet : même police que l'appli */
 .leaflet-container { font: inherit; background: #eef5fb; } /* mer */

@@ -6,6 +6,7 @@
   "scripts": {
     "prestart": "node -e \"fs.existsSync('node_modules/.bin/vite') || child_process.execSync('npm install', {stdio: 'inherit'})\"",
     "start": "vite --open",
+    "reseau": "vite --host --open",
     "build": "vite build",
     "preview": "vite preview --open",
     "lint": "eslint ."

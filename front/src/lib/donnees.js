@@ -10,7 +10,10 @@ export async function chargeJSON(url, signal) {
 export async function chargeOctets(url, debut, fin, signal) {
   const r = await fetch(url, { signal, headers: { Range: `bytes=${debut}-${fin - 1}` } });
   if (r.status !== 206) throw new Error(`Requête Range non prise en charge (HTTP ${r.status}, ${url})`);
-  return new Uint8Array(await r.arrayBuffer());
+  // Fichier absent → Vite renvoie index.html (le cache du navigateur en fait un 206 de quelques centaines d'octets)
+  const octets = new Uint8Array(await r.arrayBuffer());
+  if (octets.length !== fin - debut) throw new Error(`Fichier tronqué ou absent (${octets.length}/${fin - debut} octets, ${url})`);
+  return octets;
 }
 
 // JSON chargé au montage. null tant qu'il n'est pas là (ou en cas d'erreur, affichée en console)
