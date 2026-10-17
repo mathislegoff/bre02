@@ -3,3 +3,9 @@ dist/
 .DS_Store
 *.log
 front/scripts/sources/*.nc
+front/scripts/sources/*.tif
+front/scripts/sources/TCH_FRA_V2/
+front/scripts/sources/carte-shom-7066.png
+# Champs de vagues (≈ 80 Mo par fichier) : régénérer avec scripts/marc.py (et scripts/champs.py pour l’IA)
+front/public/data/champs/*/*.bin
+__pycache__/

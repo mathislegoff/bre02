@@ -1,24 +1,38 @@
 // Réglages du front
+import cadre from './cadre.json';
+
+const data = (f) => `${import.meta.env.BASE_URL}data/${f}`;
+
 export const CONFIG = {
-  name: "BR02",
+  name: "BRE02",
   logo: `${import.meta.env.BASE_URL}logo.png`,
-  data: `${import.meta.env.BASE_URL}data/plages.geojson`,
-  comparaison: `${import.meta.env.BASE_URL}data/pierres-noires-2013.json`,
 
+  data: {
+    plages: data("plages.geojson"),
+    grille: data("grille-marc.json"),
+    cote: data("trait-de-cote.json"),
+    terre: data("terre.json"),
+    comparaison: data("pierres-noires-2013.json"),
+    // Champ affiché sur la carte : index.json + <param>.temps.bin + <param>.noeuds.bin (voir scripts/champs.py).
+    // MARC pour l'instant (scripts/marc.py) ; passer à "champs/ia/" quand le modèle IA sera prêt
+    champ: data("champs/marc/"),
+  },
+
+  // Emprise et période communes avec les scripts Python : src/cadre.json
   map: {
-    // Emprise de la carte [[sud, ouest], [nord, est]] : 5°20'W → 4°15'W, nord 48°45'N.
-    // Limite sud PROVISOIRE (à confirmer).
-    bounds: [[47.75, -5 - 20 / 60], [48 + 45 / 60, -4 - 15 / 60]],
-    tiles: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-    attribution:
-      "© contributeurs OpenStreetMap · Plages : ARS / data.gouv.fr · Vagues : CANDHIS (Cerema), MARC (Ifremer/SHOM)",
+    bounds: [[cadre.sud, cadre.ouest], [cadre.nord, cadre.est]],
+    attribution: "Trait de côte © Shom/IGN · Vagues : CANDHIS (Cerema), MARC (Ifremer/SHOM)",
+  },
+  periode: { debut: Date.parse(cadre.debut), heures: cadre.heures },
+
+  // Courbes du graphique (hauteur des vagues). visible: false → pas affichée
+  series: {
+    mesure: { label: "Mesure bouée (CANDHIS)", color: "#1b1f3b", visible: true },
+    marc: { label: "MARC (modèle classique)", color: "#1f6fd1", visible: true },
+    ia: { label: "Notre modèle IA", color: "#9b3fa6", visible: false },
   },
 
-  // Courbes du graphique de comparaison (hauteur des vagues).
-  // visible: false → pas affichée (passer à true pour montrer les modèles)
-  series: {
-    mesure: { label: "Mesure bouée (CANDHIS)", color: "#14213d", visible: true },
-    marc: { label: "MARC (modèle classique)", color: "#e08a1e", visible: false },
-    ia: { label: "Notre modèle IA", color: "#1f6fd1", visible: false },
-  },
+  // Échelle de la hauteur des vagues sur la carte (m), du calme à la grosse mer
+  // (clair et aéré : le plus foncé reste le bleu de la charte)
+  echelle: { max: 8, pas: 0.5, couleurs: ["#f3f9fe", "#d2e8f8", "#9ccbef", "#5ca6e4", "#1f6fd1"] },
 };

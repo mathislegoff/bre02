@@ -18,7 +18,7 @@
 #
 # Usage : pip install netCDF4 && python3 scripts/comparaison.py
 import csv, glob, json, os, urllib.request
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 import netCDF4
 import numpy as np
@@ -31,9 +31,7 @@ MARC_URL = "https://data-dataref.ifremer.fr/ww3/homere/HINDCAST/2013/{m:02d}/FRE
 PARAMS = ["hs", "tp", "t02", "dir"]
 CANDHIS_COLS = {"hs": "HM0", "tp": "TP", "t02": "T02", "dir": "THETAP"}
 
-START = datetime(2013, 1, 1, tzinfo=timezone.utc)
-HEURES = [START + timedelta(hours=h) for h in range(365 * 24)]
-INDEX = {t: i for i, t in enumerate(HEURES)}
+from cadre import DEBUT as START, INDEX, TEMPS as HEURES
 
 
 def vide():

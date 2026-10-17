@@ -1,0 +1,11 @@
+# Scripts de données. Usage : python3 -m venv .venv && .venv/bin/pip install -r scripts/requirements.txt
+numpy
+netCDF4
+pyogrio
+shapely
+pyproj
+pillow
+rasterio
+h5py
+fsspec
+aiohttp

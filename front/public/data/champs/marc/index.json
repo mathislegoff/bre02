@@ -1,0 +1,18 @@
+{
+  "source": "marc",
+  "label": "MARC (Ifremer/SHOM)",
+  "debut": "2013-01-01T00:00:00Z",
+  "heures": 8760,
+  "noeuds": 9444,
+  "manquant": 255,
+  "params": {
+    "hs": {
+      "echelle": 0.05,
+      "unite": "m"
+    },
+    "dir": {
+      "echelle": 2,
+      "unite": "°"
+    }
+  }
+}

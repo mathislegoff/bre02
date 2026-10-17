@@ -1,0 +1,78 @@
+// Champs de vagues sur le maillage MARC : voir scripts/champs.py pour le format
+// (un fichier par paramètre : hs = hauteur en m, dir = direction d'où viennent les vagues en °)
+import { useEffect, useState } from 'react';
+import { CONFIG } from '../config.js';
+import { chargeOctets } from './donnees.js';
+
+// Octet → valeur réelle (null si manquant)
+export const valeur = (champ, param, q) => (q === champ.manquant ? null : q * champ.params[param].echelle);
+
+const params = (champ) => Object.keys(champ.params);
+
+// La carte charge un jour entier (24 h × nœuds) à la fois ; on garde les derniers jours en mémoire
+const jours = new Map();
+function jour(champ, param, j) {
+  const cle = `${champ.url}${param}|${j}`;
+  if (!jours.has(cle)) {
+    const n = champ.noeuds;
+    const p = chargeOctets(`${champ.url}${param}.temps.bin`, j * 24 * n, Math.min(champ.heures, (j + 1) * 24) * n);
+    p.catch(() => jours.delete(cle));
+    jours.set(cle, p);
+    if (jours.size > 16) jours.delete(jours.keys().next().value);
+  }
+  return jours.get(cle);
+}
+
+// Octets de tous les nœuds à une heure donnée : { hs, dir }. Garde l'heure précédente le temps du chargement
+export function useChampHeure(champ, heure) {
+  const [valeurs, setValeurs] = useState(null);
+  useEffect(() => {
+    if (!champ) return;
+    let actif = true;
+    const j = Math.floor(heure / 24);
+    const h = heure - j * 24;
+    const n = champ.noeuds;
+    Promise.all(params(champ).map((p) => jour(champ, p, j)))
+      .then((blocs) => {
+        if (!actif) return;
+        setValeurs(Object.fromEntries(params(champ).map((p, k) => [p, blocs[k].subarray(h * n, (h + 1) * n)])));
+      })
+      .catch((e) => console.error('Champ de vagues :', e));
+    if ((j + 1) * 24 < champ.heures) params(champ).forEach((p) => jour(champ, p, j + 1).catch(() => {})); // pour la lecture
+    return () => { actif = false; };
+  }, [champ, heure]);
+  return valeurs;
+}
+
+// Séries d'un nœud sur toute la période : { hs: [m | null], dir: [° | null] }
+export function useSerieNoeud(champ, noeud) {
+  const [serie, setSerie] = useState(null);
+  useEffect(() => {
+    if (!champ || noeud == null) return;
+    const controller = new AbortController();
+    const T = champ.heures;
+    Promise.all(params(champ).map((p) => chargeOctets(`${champ.url}${p}.noeuds.bin`, noeud * T, (noeud + 1) * T, controller.signal)))
+      .then((blocs) => setSerie({
+        noeud,
+        v: Object.fromEntries(params(champ).map((p, k) => [p, Array.from(blocs[k], (q) => valeur(champ, p, q))])),
+      }))
+      .catch((e) => e.name !== 'AbortError' && console.error('Série du nœud :', e));
+    return () => controller.abort();
+  }, [champ, noeud]);
+  return serie?.noeud === noeud ? serie.v : null;
+}
+
+// Échelle de couleur : une classe tous les `pas` mètres, de 0 à `max`
+const { max, pas, couleurs: reperes } = CONFIG.echelle;
+const hex = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
+export const COULEURS = Array.from({ length: max / pas }, (_, k) => {
+  const t = (k / (max / pas - 1)) * (reperes.length - 1);
+  const i = Math.min(reperes.length - 2, Math.floor(t));
+  const [a, b] = [hex(reperes[i]), hex(reperes[i + 1])];
+  return `rgb(${a.map((x, c) => Math.round(x + (b[c] - x) * (t - i))).join(' ')})`;
+});
+export const classe = (m) => Math.min(COULEURS.length - 1, Math.floor(m / pas));
+
+// Direction (d'où viennent les vagues) → flèche et point cardinal
+const POINTS = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
+export const cardinal = (deg) => POINTS[Math.round(deg / 45) % 8];

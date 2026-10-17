@@ -1,0 +1,9 @@
+{
+  "_doc": "Cadre commun au front (src/config.js) et aux scripts Python. Emprise : carte SHOM 7066 coupée à 5°20'W / 4°15'W. Période : heures de la timeline.",
+  "sud": 47.6656317,
+  "ouest": -5.3333333,
+  "nord": 48.7356883,
+  "est": -4.25,
+  "debut": "2013-01-01T00:00:00Z",
+  "heures": 8760
+}

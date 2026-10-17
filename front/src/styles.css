@@ -1,43 +1,49 @@
-/* Couleurs tirées du logo */
+/* Couleurs tirées du logo : vague bleue (données), bonhomme violet (marque, IA), board jaune (sélection).
+   Beaucoup de blanc : les couleurs ne servent que d'accents. */
 :root {
-  --bg: #f4f4f2;
   --panel: #ffffff;
-  --line: #e3e7ed;
-  --ink: #14213d;
-  --muted: #6b7a90;
+  --line: #e8ebf0;
+  --ink: #1b1f3b;
+  --muted: #6b7385;
   --ocean: #1f6fd1;
+  --violet: #9b3fa6;
+  --jaune: #f5c400;
+  --rayon: 8px;
 
-  /* Une seule police, trois tailles */
+  /* Texte : Archivo (libre, OFL), trois tailles. Titre : Bagel Fat One, ronde façon pâte à modeler */
   --fs-sm: 13px;
   --fs-md: 15px;
   --fs-lg: 20px;
 
-  font: var(--fs-md) / 1.45 system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font: var(--fs-md) / 1.45 'Archivo', system-ui, sans-serif;
   color: var(--ink);
-  background: var(--bg);
+  background: var(--panel);
 }
 
 * { box-sizing: border-box; }
 html, body, #root { margin: 0; height: 100%; }
 h1, h2, p, ul { margin: 0; }
 button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
 
 /* Mise en page */
 .app {
   display: grid;
   grid-template-columns: 1fr 340px;
-  grid-template-rows: 56px 1fr;
-  grid-template-areas:
-    'header header'
-    'map side';
-  height: 100dvh;
-}
-.app.avec-comp {
-  grid-template-rows: 56px 1fr 300px;
+  grid-template-rows: 56px 1fr auto;
   grid-template-areas:
     'header header'
     'map side'
-    'comp side';
+    'time side';
+  height: 100dvh;
+}
+.app.avec-graph {
+  grid-template-rows: 56px 1fr auto 260px;
+  grid-template-areas:
+    'header header'
+    'map side'
+    'time side'
+    'graph side';
 }
 
 .header {
@@ -46,58 +52,83 @@ button { font: inherit; color: inherit; }
   align-items: center;
   gap: 10px;
   padding: 0 16px;
-  background: var(--panel);
   border-bottom: 1px solid var(--line);
 }
-.logo { width: 36px; height: 36px; }
-.header h1 { font-size: var(--fs-lg); color: var(--ocean); }
+.logo { width: 40px; height: 40px; border-radius: var(--rayon); }
+.header h1 { font: 400 26px 'Bagel Fat One', system-ui, sans-serif; color: var(--violet); letter-spacing: 0.02em; }
 
 .map-wrap { grid-area: map; position: relative; min-height: 0; }
 .map { height: 100%; }
-.map-status {
+.map-status, .legende {
   position: absolute;
-  inset: 12px auto auto 50%;
-  transform: translateX(-50%);
   z-index: 1000;
-  padding: 6px 12px;
+  padding: 8px 12px;
   background: var(--panel);
   font-size: var(--fs-sm);
-  box-shadow: 0 1px 4px rgb(0 0 0 / 0.15);
+  box-shadow: 0 1px 6px rgb(27 31 59 / 0.12);
+}
+.map-status { inset: 12px auto auto 50%; transform: translateX(-50%); }
+.legende { top: 12px; right: 12px; width: 180px; }
+.degrade { height: 8px; margin-top: 6px; }
+.bornes { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; }
+.source { margin-top: 6px; color: var(--muted); font-size: 11px; }
+
+/* Frise du temps */
+.timeline {
+  grid-area: time;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--line);
+}
+.timeline input { flex: 1; min-width: 0; accent-color: var(--violet); }
+.timeline time { min-width: 170px; font-size: var(--fs-sm); font-variant-numeric: tabular-nums; text-align: right; }
+.lecture {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--violet);
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
 }
 
-.comparaison {
-  grid-area: comp;
+/* Graphique */
+.graphique {
+  grid-area: graph;
   display: flex;
   flex-direction: column;
   gap: 8px;
   min-width: 0;
+  min-height: 0;
   padding: 12px 16px;
-  background: var(--panel);
   border-top: 1px solid var(--line);
 }
-.comp-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.comparaison h2 { font-size: var(--fs-md); font-weight: 600; }
-.mois { display: flex; flex-wrap: wrap; }
-.fermer { order: 3; border: 0; background: none; font-size: 22px; line-height: 1; cursor: pointer; }
+.graph-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.graphique h2 { font-size: var(--fs-md); font-weight: 600; }
+.mois { display: flex; flex-wrap: wrap; gap: 4px; }
 .mois button {
   padding: 2px 8px;
   border: 1px solid var(--line);
-  margin-left: -1px;
+  border-radius: 999px;
   background: var(--panel);
   font-size: var(--fs-sm);
   cursor: pointer;
 }
-.mois button.on { background: var(--ink); border-color: var(--ink); color: #fff; }
-.comp-legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: var(--fs-sm); }
-.comp-legend i, .tip i { display: inline-block; width: 12px; height: 3px; vertical-align: middle; margin-right: 4px; }
-.comp-legend .absent { color: var(--muted); }
+.mois button[aria-pressed='true'] { background: var(--violet); border-color: var(--violet); color: #fff; }
+.graph-legende { display: flex; gap: 16px; flex-wrap: wrap; font-size: var(--fs-sm); }
+.graph-legende i, .tip i { display: inline-block; width: 12px; height: 3px; vertical-align: middle; margin-right: 4px; border-radius: 2px; }
 
-.chart { position: relative; flex: 1; min-height: 0; }
-.chart svg { display: block; width: 100%; height: 100%; }
+.chart { position: relative; flex: 1; min-height: 0; overflow: hidden; }
+.chart svg { display: block; cursor: crosshair; touch-action: pan-y; }
 .chart text { font-size: 11px; fill: var(--muted); }
 .chart .grid { stroke: var(--line); }
 .chart .serie { fill: none; stroke-width: 1.5; }
 .chart .curseur { stroke: var(--muted); stroke-dasharray: 3 3; }
+.chart .maintenant { stroke: var(--jaune); stroke-width: 2; }
 .tip {
   position: absolute;
   top: 0;
@@ -109,16 +140,16 @@ button { font: inherit; color: inherit; }
   pointer-events: none;
   white-space: nowrap;
 }
+.tip.gauche { transform: translateX(calc(-100% - 8px)); }
 
 /* Panneau latéral */
 .side {
   grid-area: side;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 28px;
   padding: 20px;
   overflow-y: auto;
-  background: var(--panel);
   border-left: 1px solid var(--line);
 }
 .side h2 { font-size: var(--fs-md); font-weight: 600; }
@@ -133,42 +164,39 @@ button { font: inherit; color: inherit; }
   width: 32px;
   height: 32px;
   border: 0;
+  border-radius: 50%;
   background: none;
   font-size: var(--fs-lg);
   line-height: 1;
   color: var(--muted);
   cursor: pointer;
 }
-.close:hover { color: var(--ink); }
+.close:hover { color: var(--ink); background: #f3f4f7; }
 
-.sq { display: inline-block; width: 10px; height: 10px; margin-right: 6px; }
-.ecarts { width: 100%; margin-top: 10px; border-collapse: collapse; font-size: var(--fs-sm); }
-.ecarts th, .ecarts td { padding: 6px 4px; border-bottom: 1px solid var(--line); text-align: right; font-weight: 400; }
-.ecarts thead th { color: var(--muted); }
-.ecarts tbody th { text-align: left; }
-.ecarts td { font-variant-numeric: tabular-nums; font-weight: 600; }
+
 
 /* Marqueurs */
-.marker span { display: block; width: 100%; height: 100%; background: var(--ocean); border: 1px solid #fff; }
-.marker.selected span { border: 3px solid var(--ink); }
-.bouee span { display: block; width: 100%; height: 100%; background: var(--ink); border: 3px solid #fff; outline: 1px solid var(--ink); }
+.marker span { display: block; width: 100%; height: 100%; background: #fff; border: 2px solid var(--ink); border-radius: 50%; }
+.marker.selected span { background: var(--jaune); }
+.bouee span { display: block; width: 100%; height: 100%; background: var(--ink); border: 3px solid #fff; border-radius: 4px; outline: 1px solid var(--ink); }
 
-/* Leaflet : même police que l'appli, pas d'arrondis */
-.leaflet-container { font: inherit; }
+/* Leaflet : même police que l'appli */
+.leaflet-container { font: inherit; background: #eef5fb; } /* mer */
+.leaflet-container:focus-visible { outline-offset: -2px; }
 .leaflet-tooltip { font-size: var(--fs-sm); }
 .leaflet-control-attribution { font-size: 11px; }
-.leaflet-bar, .leaflet-bar a, .leaflet-control-attribution, .leaflet-tooltip { border-radius: 0 !important; } /* !important : Leaflet cible plus précisément */
 
-/* Mobile : carte en haut, panneau en dessous */
+/* Mobile : tout s'empile et la page défile */
 @media (max-width: 768px) {
-  .app {
-    grid-template-columns: 1fr;
-    grid-template-rows: 56px minmax(0, 1fr) minmax(0, 45%);
-    grid-template-areas: 'header' 'map' 'side';
+  .app, .app.avec-graph {
+    display: flex;
+    flex-direction: column;
+    height: auto;
   }
-  .app.avec-comp {
-    grid-template-rows: 56px minmax(0, 1fr) 300px minmax(0, 45%);
-    grid-template-areas: 'header' 'map' 'comp' 'side';
-  }
-  .side { border-left: 0; border-top: 1px solid var(--line); padding: 16px; gap: 20px; }
+  .header { min-height: 56px; }
+  .map-wrap { height: 60dvh; }
+  .legende { width: 150px; }
+  .timeline time { min-width: 0; }
+  .graphique { height: 280px; flex: none; }
+  .side { border-left: 0; border-top: 1px solid var(--line); padding: 16px; gap: 24px; overflow: visible; }
 }
