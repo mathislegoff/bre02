@@ -15,7 +15,7 @@ if ($action === 'deconnexion') {
 }
 
 if ($action === 'inscription') {
-    if ($nom === '' || strlen($nom) > 50 || strlen($mdp) < 8) {
+    if ($nom === '' || mb_strlen($nom) > 50 || mb_strlen($mdp) < 8) {
         repondre(['erreur' => 'Nom requis (50 caractères max), mot de passe de 8 caractères minimum'], 400);
     }
     $q = $db->prepare('INSERT OR IGNORE INTO utilisateurs (nom, mdp) VALUES (?, ?)');

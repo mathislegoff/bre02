@@ -9,16 +9,18 @@ code() { curl -s -o /dev/null -w '%{http_code}' "$@"; }
 curl -s -c "$A" -H "$J" -d "{\"action\":\"inscription\",\"nom\":\"${N}a\",\"mdp\":\"motdepasse\"}" $U/auth.php > /dev/null
 curl -s -c "$B" -H "$J" -d "{\"action\":\"inscription\",\"nom\":\"${N}b\",\"mdp\":\"motdepasse\"}" $U/auth.php > /dev/null
 ID=$(curl -s -b "$A" -H "$J" -d '{"nom":"Spot secret","lat":48.3,"lon":-4.5}' $U/pins.php | sed 's/.*"id":\([0-9]*\).*/\1/')
+# JSON dans une variable : écrit dans "$(...)", ses accolades seraient développées par le shell ({a,b} → a b)
+PARTAGE="{\"pin_id\":$ID,\"avec\":\"${N}b\"}"
 
 [ "$(curl -s -b "$B" $U/pins.php)" = "[]" ] || echoue "B voit le favori privé de A"
 [ "$(code -b "$B" -X DELETE "$U/pins.php?id=$ID")" = 404 ] || echoue "B supprime le favori de A"
-[ "$(code -b "$B" -H "$J" -d "{\"pin_id\":$ID,\"avec\":\"${N}b\"}" $U/partages.php)" = 404 ] || echoue "B partage le favori de A"
+[ "$(code -b "$B" -H "$J" -d "$PARTAGE" $U/partages.php)" = 404 ] || echoue "B partage le favori de A"
 [ "$(code $U/pins.php)" = 401 ] || echoue "favoris lisibles sans connexion"
 [ "$(code -b "$A" -H "$J" -d '{"nom":"Marseille","lat":43.3,"lon":5.4}' $U/pins.php)" = 400 ] || echoue "favori hors de la carte accepté"
 curl -s -b "$A" $U/pins.php | grep -q "Spot secret" || echoue "A ne voit plus son favori"
 
 # A partage avec B : B le voit, sans pouvoir le supprimer ; A retire le partage : B ne le voit plus
-curl -s -b "$A" -H "$J" -d "{\"pin_id\":$ID,\"avec\":\"${N}b\"}" $U/partages.php > /dev/null
+curl -s -b "$A" -H "$J" -d "$PARTAGE" $U/partages.php > /dev/null
 curl -s -b "$B" $U/pins.php | grep -q "\"partage_par\":\"${N}a\"" || echoue "B ne voit pas le favori partagé"
 [ "$(code -b "$B" -X DELETE "$U/pins.php?id=$ID")" = 404 ] || echoue "B supprime un favori partagé"
 [ "$(code -b "$B" -X PATCH -H "$J" -d '{"etoiles":1}' "$U/pins.php?id=$ID")" = 404 ] || echoue "B note le favori de A"

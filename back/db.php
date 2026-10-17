@@ -49,6 +49,12 @@ if ($version < 2) {
     $db->exec('PRAGMA user_version = 2');
 }
 
+// POST en JSON seulement : un formulaire d'un autre site ne peut envoyer ni ce type, ni PATCH/DELETE, sans autorisation (CSRF)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !str_starts_with($_SERVER['CONTENT_TYPE'] ?? '', 'application/json')) {
+    http_response_code(415);
+    exit(json_encode(['erreur' => 'Corps JSON attendu']));
+}
+
 // Corps JSON envoyé par le front ; tableau vide s'il est absent ou invalide
 $corps = json_decode(file_get_contents('php://input'), true);
 if (!is_array($corps)) $corps = [];

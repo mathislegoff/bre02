@@ -31,7 +31,7 @@ if ($methode === 'POST') {
     $nom = is_string($corps['nom'] ?? null) ? trim($corps['nom']) : '';
     $lat = filter_var($corps['lat'] ?? null, FILTER_VALIDATE_FLOAT);
     $lon = filter_var($corps['lon'] ?? null, FILTER_VALIDATE_FLOAT);
-    if ($nom === '' || strlen($nom) > 100 || $lat === false || $lon === false) {
+    if ($nom === '' || mb_strlen($nom) > 100 || $lat === false || $lon === false) {
         repondre(['erreur' => 'Nom (100 caractères max), lat et lon requis'], 400);
     }
     // Emprise de la carte, commune au front et aux scripts Python
@@ -47,7 +47,7 @@ if ($methode === 'PATCH') {
     $etoiles = $corps['etoiles'] ?? null; // null = pas encore noté
     if ($etoiles !== null) $etoiles = filter_var($etoiles, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 5]]);
     $ressenti = is_string($corps['ressenti'] ?? null) ? trim($corps['ressenti']) : '';
-    if ($etoiles === false || strlen($ressenti) > 500) {
+    if ($etoiles === false || mb_strlen($ressenti) > 500) {
         repondre(['erreur' => 'Étoiles de 1 à 5, ressenti de 500 caractères max'], 400);
     }
     $noteLe = $etoiles === null && $ressenti === '' ? null : gmdate('Y-m-d\TH:i:s\Z'); // note effacée → plus de date
