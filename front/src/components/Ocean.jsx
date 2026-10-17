@@ -19,6 +19,7 @@ const PRATIQUES = [
   ['Garder sa planche sous contrôle', 'Une planche lâchée est un projectile. Garde ton leash en bon état et ne t’engage pas dans une vague que tu ne maîtrises pas.'],
   ['Choisir un spot à son niveau', 'Lis les conditions sur la carte. En cas de doute, ne va pas à l’eau seul·e et préviens quelqu’un de ta sortie.'],
   ['Ne laisser aucune trace', 'Rapporte tes déchets, ta wax et ceux que tu croises. Reste sur les sentiers pour épargner les dunes.'],
+  ['Respecter les locaux', 'Salue, attends ton tour au line-up, et ne montre pas à tout le monde un spot qui n’est pas le tien. Un bon spot se garde grâce à ceux qui le respectent.'],
   ['Respecter la faune', 'Garde tes distances avec les phoques et les oiseaux, surtout en période de nidification, et ne franchis pas les zones de quiétude. Si tu en croises, signale-le sur OBSenMER.'],
   ['Partager la plage', 'Baigneurs, kayakistes, pêcheurs : l’eau est à tous. Respecte les zones de baignade surveillées.'],
 ];
@@ -69,7 +70,7 @@ export default function Ocean() {
 
       <section className="ocean-bloc" id="pratiques" aria-labelledby="pratiques-titre">
         <h2 id="pratiques-titre">Les bonnes pratiques du surfeur</h2>
-        <p className="intro">Le surf s’est construit sur le respect de l’océan et des autres. Six habitudes à garder.</p>
+        <p className="intro">Le surf s’est construit sur le respect de l’océan et des autres. Sept habitudes à garder.</p>
         <dl className="lignes">
           {PRATIQUES.map(([titre, texte]) => (
             <div key={titre} className="ligne">

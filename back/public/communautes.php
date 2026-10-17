@@ -1,6 +1,6 @@
 <?php
-// Communautés locales de surf. Publiques : visibles par tous, on les rejoint en un clic. Privées : visibles de leurs membres
-// seulement, on les rejoint avec un code d'invitation.
+// Communautés locales de surf, réservées aux comptes connectés (les surfeurs gardent leurs spots pour eux). Publiques : on les rejoint
+// en un clic. Privées : visibles de leurs membres seulement, on les rejoint avec un code d'invitation.
 // GET → communautés visibles · POST {action: creer, nom, secteur, description, prive} · {action: rejoindre, id | code}
 // · {action: quitter, id}
 require __DIR__ . '/../db.php';
@@ -29,6 +29,8 @@ function communaute(PDO $db, ?int $moi, int $id): ?array
     return $c;
 }
 
+if ($moi === null) repondre(['erreur' => 'Connexion requise'], 401);
+
 if ($methode === 'GET') {
     $ids = $db->prepare('SELECT c.id FROM communautes c
         WHERE c.prive = 0 OR EXISTS (SELECT 1 FROM membres m WHERE m.communaute_id = c.id AND m.utilisateur_id = ?)
@@ -38,7 +40,6 @@ if ($methode === 'GET') {
 }
 
 if ($methode !== 'POST') repondre(['erreur' => 'Méthode non prise en charge'], 405);
-if ($moi === null) repondre(['erreur' => 'Connexion requise'], 401);
 
 $action = $corps['action'] ?? '';
 $maintenant = gmdate('Y-m-d\TH:i:s\Z');

@@ -6,20 +6,21 @@ import { api } from '../lib/api.js';
 import { useJSON } from '../lib/donnees.js';
 import Footer from './Footer.jsx';
 import { ListeCommunautes, FormulairesCommunaute } from './Communautes.jsx';
-import { Sortie, FormulaireSortie } from './Sorties.jsx';
+import { Trajet, FormulaireTrajet } from './Trajets.jsx';
 
 // Données personnelles : ce que fait réellement le back-end (mot de passe haché, cookie de session HttpOnly / SameSite)
 const DONNEES = [
-  ['Ce qu’on garde', 'Ton nom d’utilisateur, ton mot de passe haché, tes points, tes notes, tes partages, tes communautés et tes sorties.'],
-  ['Visible par', 'Ton nom apparaît dans les communautés publiques que tu rejoins et sur tes sorties. Une communauté privée n’est visible que de ses membres.'],
-  ['Pourquoi', 'Faire marcher ton compte, tes partages et tes sorties. Ni revente, ni publicité.'],
+  ['Ce qu’on garde', 'Ton nom d’utilisateur, ton mot de passe haché, tes points, tes notes, tes partages, tes communautés et tes trajets.'],
+  ['Visible par', 'Ton nom apparaît aux membres de tes communautés, sur tes trajets. Rien n’est visible sans compte, et une communauté privée n’est visible que de ses membres.'],
+  ['Pourquoi', 'Faire marcher ton compte, tes partages et tes trajets. Ni revente, ni publicité.'],
   ['Cookie', 'Un seul : celui de la session. Il expire à la fermeture du navigateur.'],
   ['Durée', 'Tant que ton compte existe ; suppression après [durée] d’inactivité.'],
   ['Tes droits', `Accès, rectification, effacement, portabilité, opposition : ${CONFIG.contact || '[contact]'}, ou la CNIL.`],
   ['Hébergement', '[Hébergeur à définir]. Mots de passe hachés, cookie HttpOnly et SameSite.'],
 ];
 
-// Page « Communauté » : des communautés locales de surf (publiques ou privées) et leurs sorties, façon covoiturage, sans messagerie
+// Page « Communauté » : du covoiturage entre surfeurs dans des communautés locales (publiques ou privées), sans messagerie.
+// Rien n'est visible sans compte : les surfeurs gardent leurs spots pour eux
 // (Figma « Page — Équipe & RGPD » pour la partie données personnelles)
 export default function Communaute({ utilisateur, onConnexion }) {
   const connecte = !!utilisateur;
@@ -28,7 +29,7 @@ export default function Communaute({ utilisateur, onConnexion }) {
   const [message, setMessage] = useState('');
   const plages = useJSON(CONFIG.data.plages);
 
-  // Noms des spots de la carte : suggestions pour proposer une sortie
+  // Noms des spots de la carte : suggestions pour proposer un trajet
   const spots = useMemo(() => {
     if (!plages) return [];
     const [[sud, ouest], [nord, est]] = CONFIG.map.bounds;
@@ -42,52 +43,67 @@ export default function Communaute({ utilisateur, onConnexion }) {
     () => Promise.all([api('/communautes.php'), api('/annonces.php')]).then(([communautes, sorties]) => setDonnees({ communautes, sorties })).catch(() => setDonnees('erreur')),
     [],
   );
-  useEffect(() => { charger(); }, [charger, utilisateur?.id]); // à l'arrivée, et quand on se connecte ou se déconnecte
+  useEffect(() => { if (utilisateur) charger(); }, [charger, utilisateur]); // à l'arrivée connecté, ou dès qu'on se connecte
 
   // Exécute un appel puis recharge ; renvoie true si ça a marché (les formulaires se vident alors), sinon affiche l'erreur
   const agir = useCallback((appel) => appel.then(() => { setMessage(''); return charger().then(() => true); }).catch((e) => { setMessage(e.message); return false; }), [charger]);
 
   const { communautes = [], sorties = [] } = donnees && donnees !== 'erreur' ? donnees : {};
-  const visibles = sorties.filter((s) => !filtre || s.communaute_id === filtre);
-  const commun = { connecte, onConnexion, agir };
+  const visibles = sorties.filter((t) => !filtre || t.communaute_id === filtre);
+  const commun = { agir };
 
   return (
     <div className="page ocean communaute">
       <header className="ocean-tete communaute-tete">
         <div>
           <p className="surtitre">Communauté</p>
-          <h1>Surfer à plusieurs, tout près de chez toi.</h1>
+          <h1>Covoiturer entre surfeurs, tout près de chez toi.</h1>
           <p>
-            Rejoins la communauté de ton coin ou crée la tienne, ouverte ou privée. Pas de chat : une sortie, un spot, une heure, et on répond
-            « je viens », comme un BlaBlaCar du surf, local et rapide.
+            Entre gens du coin : on partage la voiture jusqu’au spot, sans le crier sur tous les toits. Rejoins la communauté de ton coin ou
+            crée la tienne, ouverte ou privée. Pas de chat : tu réserves une place.
+          </p>
+          <p className="discretion">
+            <strong>Discrétion.</strong> Ce qui se passe au spot reste au spot : rien n’est public, les trajets ne sont visibles que des membres
+            connectés d’une communauté. Une communauté publique accepte tout compte connecté ; pour un spot secret, crée un groupe privé et ne
+            partage que son code. Et on respecte le line-up et ceux qui y étaient avant nous.
           </p>
         </div>
         <img className="voiture" src={voiture} alt="Une voiture en pâte à modeler, deux planches de surf sur le toit" />
       </header>
 
-      {donnees === 'erreur' && <p className="erreur communaute-erreur" role="alert">Les communautés ne sont pas disponibles pour le moment.</p>}
-      {message && <p className="erreur communaute-erreur" role="alert">{message}</p>}
+      {!connecte ? (
+        <section className="ocean-bloc" aria-labelledby="connexion-titre">
+          <h2 id="connexion-titre">Connecte-toi pour voir les communautés</h2>
+          <p className="intro">Un compte est facultatif sur Riklañ, mais il faut en avoir un pour covoiturer : c’est ce qui garde les trajets entre membres.</p>
+          <button className="btn" onClick={onConnexion}>Se connecter ou créer un compte</button>
+        </section>
+      ) : (
+        <>
+          {donnees === 'erreur' && <p className="erreur communaute-erreur" role="alert">Les communautés ne sont pas disponibles pour le moment.</p>}
+          {message && <p className="erreur communaute-erreur" role="alert">{message}</p>}
 
-      <section className="ocean-bloc" id="sorties" aria-labelledby="sorties-titre">
-        <h2 id="sorties-titre">Sorties à venir</h2>
-        {!donnees ? <p className="muted">Chargement…</p> : visibles.length === 0 ? (
-          <p className="muted">Aucune sortie pour l’instant{filtre ? ' dans cette communauté' : ''}. Propose la première.</p>
-        ) : (
-          <ul className="sorties">{visibles.map((s) => <Sortie key={s.id} s={s} {...commun} />)}</ul>
-        )}
-        <h3 className="sous-titre">Proposer une sortie</h3>
-        <FormulaireSortie communautes={communautes} spots={spots} {...commun} />
-      </section>
+          <section className="ocean-bloc" id="trajets" aria-labelledby="trajets-titre">
+            <h2 id="trajets-titre">Trajets à venir</h2>
+            {!donnees ? <p className="muted">Chargement…</p> : visibles.length === 0 ? (
+              <p className="muted">Aucun trajet pour l’instant{filtre ? ' dans cette communauté' : ''}. Propose le premier.</p>
+            ) : (
+              <ul className="trajets">{visibles.map((t) => <Trajet key={t.id} t={t} {...commun} />)}</ul>
+            )}
+            <h3 className="sous-titre">Proposer un trajet</h3>
+            <FormulaireTrajet communautes={communautes} spots={spots} {...commun} />
+          </section>
 
-      <section className="ocean-bloc" id="communautes" aria-labelledby="communautes-titre">
-        <h2 id="communautes-titre">Les communautés</h2>
-        {!donnees ? <p className="muted">Chargement…</p> : <ListeCommunautes communautes={communautes} filtre={filtre} onFiltre={setFiltre} {...commun} />}
-        <FormulairesCommunaute {...commun} />
-      </section>
+          <section className="ocean-bloc" id="communautes" aria-labelledby="communautes-titre">
+            <h2 id="communautes-titre">Les communautés</h2>
+            {!donnees ? <p className="muted">Chargement…</p> : <ListeCommunautes communautes={communautes} filtre={filtre} onFiltre={setFiltre} {...commun} />}
+            <FormulairesCommunaute {...commun} />
+          </section>
+        </>
+      )}
 
       <section className="ocean-bloc" id="contribuer" aria-labelledby="contribuer-titre">
         <h2 id="contribuer-titre">Une question, une idée ?</h2>
-        <p className="intro">Un spot à ajouter, une communauté à signaler, une idée pour la suite : écris-nous.</p>
+        <p className="intro">Une idée pour la suite, un problème, une communauté à signaler : écris-nous.</p>
         {CONFIG.contact ? (
           <a className="btn" href={`mailto:${CONFIG.contact}?subject=${encodeURIComponent('Communauté Riklañ')}`}>Nous écrire</a>
         ) : (

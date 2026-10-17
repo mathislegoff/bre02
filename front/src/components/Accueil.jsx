@@ -1,8 +1,5 @@
 import { CONFIG } from '../config.js';
-import { useEffect, useState } from 'react';
-import { api } from '../lib/api.js';
 import Comparaison from './Comparaison.jsx';
-import { Sortie } from './Sorties.jsx';
 import Associations from './Associations.jsx';
 import Footer from './Footer.jsx';
 import vague from '../assets/vague.svg';
@@ -12,10 +9,6 @@ import basHome from '../assets/bas-home.jpg';
 // Présentation en haut de la page, sans barre de navigation : le titre et le logo, la comparaison avec / sans IA et la
 // protection de l'océan. « Voir la carte » ouvre la page de la carte.
 export default function Accueil({ onVoirCarte, comparaison }) {
-  // Prochaines sorties des communautés publiques (masquées si le serveur ne répond pas)
-  const [sorties, setSorties] = useState([]);
-  useEffect(() => { api('/annonces.php').then((l) => setSorties(l.slice(0, 3))).catch(() => {}); }, []);
-
   return (
     <div className="accueil">
       <section className="hero">
@@ -34,18 +27,9 @@ export default function Accueil({ onVoirCarte, comparaison }) {
       {/* Transition sous « Voir la carte » : de la plage vers la mer, en pâte à modeler */}
       <img className="bas-home" src={basHome} alt="Une plage de sable et de galets qui descend vers la mer, en pâte à modeler" />
 
-      {sorties.length > 0 && (
-        <section className="sorties-accueil" aria-labelledby="sorties-accueil-titre">
-          <h2 id="sorties-accueil-titre">Surfer ensemble, près de chez toi</h2>
-          <p className="intro">Des communautés locales proposent des sorties et des places en voiture. Pas de chat : on répond « je viens ».</p>
-          <ul className="sorties">{sorties.map((s) => <Sortie key={s.id} s={s} compact />)}</ul>
-          <a className="btn" href="#/communaute">Voir toutes les sorties</a>
-        </section>
-      )}
-
       <section className="comparaison" aria-labelledby="ia-titre">
         <h2 id="ia-titre">La houle, mesurée et prévue</h2>
-        <p className="intro">Ce que mesure la bouée, ce que prévoit le modèle physique et, à terme, notre IA : plus une courbe colle à celle de la bouée, meilleure est la prévision.</p>
+        <p className="intro">Riklañ prédit la houle : hauteur, période et direction, spot par spot. Ici, ce que mesure la bouée face à ce que prévoit le modèle physique et, à terme, notre IA : plus une courbe colle à celle de la bouée, meilleure est la prévision.</p>
         <div className="cadre-argile">
           <Comparaison comparaison={comparaison} />
         </div>

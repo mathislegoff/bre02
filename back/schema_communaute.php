@@ -39,4 +39,8 @@ function schema_communaute(PDO $db): void
         PRIMARY KEY (annonce_id, utilisateur_id)
     )');
     $db->exec('CREATE INDEX IF NOT EXISTS annonces_debut ON annonces (debut)');
+
+    // Démo : communautés et covoiturages fictifs, recréés quand il n'y en a plus (voir demo_data.php)
+    require_once __DIR__ . '/demo_data.php';
+    if (demo_a_rafraichir($db)) seed_demo($db);
 }

@@ -10,8 +10,9 @@ dans() { date -u -v+"$1"d +%Y-%m-%dT10:00:00Z 2>/dev/null || date -u -d "+$1 day
 curl -s -c "$A" -H "$J" -d "{\"action\":\"inscription\",\"nom\":\"${N}a\",\"mdp\":\"motdepasse\"}" $U/auth.php > /dev/null
 curl -s -c "$B" -H "$J" -d "{\"action\":\"inscription\",\"nom\":\"${N}b\",\"mdp\":\"motdepasse\"}" $U/auth.php > /dev/null
 
-# Lecture sans compte : seulement les communautés publiques ; écriture refusée
-curl -s $U/communautes.php | grep -q '"prive":true' && echoue "communauté privée visible sans connexion"
+# Rien n'est visible sans compte (les surfeurs gardent leurs spots pour eux)
+[ "$(code $U/communautes.php)" = 401 ] || echoue "communautés lisibles sans connexion"
+[ "$(code $U/annonces.php)" = 401 ] || echoue "trajets lisibles sans connexion"
 SANS='{"action":"creer","nom":"Sans compte"}'
 [ "$(code -H "$J" -d "$SANS" $U/communautes.php)" = 401 ] || echoue "création sans connexion"
 
@@ -25,22 +26,23 @@ REJ="{\"action\":\"rejoindre\",\"id\":$ID}"; MAUVAIS='{"action":"rejoindre","cod
 [ "$(code -b "$B" -H "$J" -d "$MAUVAIS" $U/communautes.php)" = 404 ] || echoue "mauvais code accepté"
 [ "$(code -b "$A" -H "$J" -d "$DOUBLON" $U/communautes.php)" = 409 ] || echoue "nom en double accepté"
 
-# Sans être membre : pas de sortie
-SORTIE="{\"action\":\"creer\",\"communaute_id\":$ID,\"spot\":\"Torche\",\"debut\":\"$(dans 2)\",\"places\":2,\"depart\":\"Quimper\",\"niveau\":\"tous\"}"
+# Sans être membre : pas de trajet
+SORTIE="{\"action\":\"creer\",\"communaute_id\":$ID,\"spot\":\"Torche\",\"debut\":\"$(dans 2)\",\"places\":2,\"depart\":\"Quimper\"}"
 [ "$(code -b "$B" -H "$J" -d "$SORTIE" $U/annonces.php)" = 403 ] || echoue "B crée une sortie sans être membre"
 PASSE="{\"action\":\"creer\",\"communaute_id\":$ID,\"spot\":\"Torche\",\"debut\":\"2020-01-01T10:00:00Z\"}"
 SANSDEPART="{\"action\":\"creer\",\"communaute_id\":$ID,\"spot\":\"Torche\",\"debut\":\"$(dans 2)\",\"places\":2}"
+SANSPLACE="{\"action\":\"creer\",\"communaute_id\":$ID,\"spot\":\"Torche\",\"debut\":\"$(dans 2)\",\"places\":0,\"depart\":\"Quimper\"}"
 [ "$(code -b "$A" -H "$J" -d "$PASSE" $U/annonces.php)" = 400 ] || echoue "sortie dans le passé acceptée"
 [ "$(code -b "$A" -H "$J" -d "$SANSDEPART" $U/annonces.php)" = 400 ] || echoue "voiture sans départ acceptée"
+[ "$(code -b "$A" -H "$J" -d "$SANSPLACE" $U/annonces.php)" = 400 ] || echoue "trajet sans place accepté"
 
 # A propose une sortie avec 1 place ; B rejoint avec le code, voit la sortie, prend la place ; une 2e demande est refusée
 S=$(curl -s -b "$A" -H "$J" -d "$(echo "$SORTIE" | sed 's/"places":2/"places":1/')" $U/annonces.php)
 SID=$(echo "$S" | sed 's/.*"id":\([0-9]*\),"communaute_id.*/\1/')
-curl -s $U/annonces.php | grep -q "\"id\":$SID," && echoue "sortie d'une communauté privée visible sans connexion"
 curl -s -b "$B" -H "$J" -d "{\"action\":\"rejoindre\",\"code\":\"$CODE\"}" $U/communautes.php | grep -q '"membre":true' || echoue "B n'a pas pu rejoindre avec le code"
-curl -s -b "$B" -H "$J" -d "{\"action\":\"venir\",\"id\":$SID,\"place\":true}" $U/annonces.php | grep -q '"places_prises":1' || echoue "B n'a pas pris la place"
+curl -s -b "$B" -H "$J" -d "{\"action\":\"venir\",\"id\":$SID}" $U/annonces.php | grep -q '"places_prises":1' || echoue "B n'a pas réservé la place"
 curl -s -c "$B" -H "$J" -d "{\"action\":\"inscription\",\"nom\":\"${N}c\",\"mdp\":\"motdepasse\"}" $U/auth.php > /dev/null
-VENIR="{\"action\":\"venir\",\"id\":$SID,\"place\":true}"
+VENIR="{\"action\":\"venir\",\"id\":$SID}"
 [ "$(code -b "$B" -H "$J" -d "$VENIR" $U/annonces.php)" = 404 ] || echoue "C (hors communauté privée) voit ou répond à la sortie"
 
 # Suppression : seul l'auteur

@@ -35,6 +35,7 @@ function stats(ref, sim) {
 // puis 2-3 chiffres sur toute l'année
 export default function Comparaison({ comparaison }) {
   const series = comparaison?.series;
+  const demo = comparaison?.demo?.includes('ia'); // prévision IA fictive (scripts/ia_demo.py) tant que l'équipe modèle n'a rien livré
   const mesure = series?.mesure?.hs;
 
   const { debut, fin } = useMemo(() => {
@@ -79,6 +80,7 @@ export default function Comparaison({ comparaison }) {
             <i style={{ background: CONFIG.series[cle].color }} />
             {CONFIG.series[cle].label}
             {cle === 'ia' && !series.ia?.hs && <small> · à venir</small>}
+            {cle === 'ia' && demo && <small> · données de démonstration</small>}
           </span>
         ))}
       </div>
@@ -104,6 +106,7 @@ export default function Comparaison({ comparaison }) {
         <p className="petit">
           {comparaison.station.nom} · la plus forte houle mesurée en 2013, sur 3 jours. Écarts de chaque modèle à la mesure sur toute l’année :
         </p>
+        {demo && <p className="petit">La courbe de l’IA est une démonstration : de vraies prévisions la remplaceront dès qu’elles seront prêtes.</p>}
         <dl className="ecarts">
           {MODELES.map((m) => (
             <div key={m}>
