@@ -9,7 +9,7 @@ const icon = (selected) =>
     iconSize: selected ? [18, 18] : [10, 10],
   });
 
-export default function MapView({ plage, onSelectPlage }) {
+export default function MapView({ plage, onSelectPlage, station, onSelectStation }) {
   const ref = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef(new Map());
@@ -17,8 +17,10 @@ export default function MapView({ plage, onSelectPlage }) {
   const [status, setStatus] = useState('loading');
 
   useEffect(() => {
-    const { center, zoom, tiles, attribution } = CONFIG.map;
-    const map = L.map(ref.current).setView(center, zoom);
+    const { bounds, tiles, attribution } = CONFIG.map;
+    const map = L.map(ref.current, { maxBounds: L.latLngBounds(bounds).pad(0.1), maxBoundsViscosity: 1 });
+    map.fitBounds(bounds);
+    map.setMinZoom(map.getZoom());
     L.tileLayer(tiles, { attribution, maxZoom: 18 }).addTo(map);
     mapRef.current = map;
 
@@ -54,6 +56,19 @@ export default function MapView({ plage, onSelectPlage }) {
       map.remove();
     };
   }, [onSelectPlage]);
+
+  // Bouée de comparaison (point MARC 62069)
+  useEffect(() => {
+    if (!station) return;
+    const m = L.marker([station.lat, station.lon], {
+      icon: L.divIcon({ className: 'bouee', html: '<span></span>', iconSize: [16, 16] }),
+      zIndexOffset: 2000,
+    })
+      .bindTooltip(document.createTextNode(station.nom), { permanent: true, direction: 'right', offset: [10, 0] })
+      .on('click', onSelectStation)
+      .addTo(mapRef.current);
+    return () => m.remove();
+  }, [station, onSelectStation]);
 
   // Plage sélectionnée : on la met en avant et on zoome dessus
   useEffect(() => {

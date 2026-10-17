@@ -26,12 +26,18 @@ button { font: inherit; color: inherit; }
 .app {
   display: grid;
   grid-template-columns: 1fr 340px;
-  grid-template-rows: 56px 1fr 48px;
+  grid-template-rows: 56px 1fr;
+  grid-template-areas:
+    'header header'
+    'map side';
+  height: 100dvh;
+}
+.app.avec-comp {
+  grid-template-rows: 56px 1fr 300px;
   grid-template-areas:
     'header header'
     'map side'
-    'time side';
-  height: 100dvh;
+    'comp side';
 }
 
 .header {
@@ -59,15 +65,50 @@ button { font: inherit; color: inherit; }
   box-shadow: 0 1px 4px rgb(0 0 0 / 0.15);
 }
 
-.timeline {
-  grid-area: time;
+.comparaison {
+  grid-area: comp;
   display: flex;
-  align-items: center;
-  padding: 0 16px;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px 16px;
   background: var(--panel);
   border-top: 1px solid var(--line);
 }
-.timeline input { flex: 1; accent-color: var(--ocean); }
+.comp-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.comparaison h2 { font-size: var(--fs-md); font-weight: 600; }
+.mois { display: flex; flex-wrap: wrap; }
+.fermer { order: 3; border: 0; background: none; font-size: 22px; line-height: 1; cursor: pointer; }
+.mois button {
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  margin-left: -1px;
+  background: var(--panel);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+}
+.mois button.on { background: var(--ink); border-color: var(--ink); color: #fff; }
+.comp-legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: var(--fs-sm); }
+.comp-legend i, .tip i { display: inline-block; width: 12px; height: 3px; vertical-align: middle; margin-right: 4px; }
+.comp-legend .absent { color: var(--muted); }
+
+.chart { position: relative; flex: 1; min-height: 0; }
+.chart svg { display: block; width: 100%; height: 100%; }
+.chart text { font-size: 11px; fill: var(--muted); }
+.chart .grid { stroke: var(--line); }
+.chart .serie { fill: none; stroke-width: 1.5; }
+.chart .curseur { stroke: var(--muted); stroke-dasharray: 3 3; }
+.tip {
+  position: absolute;
+  top: 0;
+  transform: translateX(8px);
+  padding: 6px 8px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  font-size: var(--fs-sm);
+  pointer-events: none;
+  white-space: nowrap;
+}
 
 /* Panneau latéral */
 .side {
@@ -100,9 +141,17 @@ button { font: inherit; color: inherit; }
 }
 .close:hover { color: var(--ink); }
 
+.sq { display: inline-block; width: 10px; height: 10px; margin-right: 6px; }
+.ecarts { width: 100%; margin-top: 10px; border-collapse: collapse; font-size: var(--fs-sm); }
+.ecarts th, .ecarts td { padding: 6px 4px; border-bottom: 1px solid var(--line); text-align: right; font-weight: 400; }
+.ecarts thead th { color: var(--muted); }
+.ecarts tbody th { text-align: left; }
+.ecarts td { font-variant-numeric: tabular-nums; font-weight: 600; }
+
 /* Marqueurs */
 .marker span { display: block; width: 100%; height: 100%; background: var(--ocean); border: 1px solid #fff; }
 .marker.selected span { border: 3px solid var(--ink); }
+.bouee span { display: block; width: 100%; height: 100%; background: var(--ink); border: 3px solid #fff; outline: 1px solid var(--ink); }
 
 /* Leaflet : même police que l'appli, pas d'arrondis */
 .leaflet-container { font: inherit; }
@@ -114,8 +163,12 @@ button { font: inherit; color: inherit; }
 @media (max-width: 768px) {
   .app {
     grid-template-columns: 1fr;
-    grid-template-rows: 56px minmax(0, 1fr) 48px minmax(0, 45%);
-    grid-template-areas: 'header' 'map' 'time' 'side';
+    grid-template-rows: 56px minmax(0, 1fr) minmax(0, 45%);
+    grid-template-areas: 'header' 'map' 'side';
+  }
+  .app.avec-comp {
+    grid-template-rows: 56px minmax(0, 1fr) 300px minmax(0, 45%);
+    grid-template-areas: 'header' 'map' 'comp' 'side';
   }
   .side { border-left: 0; border-top: 1px solid var(--line); padding: 16px; gap: 20px; }
 }
