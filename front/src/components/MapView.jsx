@@ -230,10 +230,10 @@ function Legende({ champ }) {
   const { max, couleurs } = CONFIG.echelle;
   return (
     <div className="legende">
-      <span>Hauteur des vagues</span>
+      <span>Hauteur de la houle</span>
       <div className="degrade" style={{ background: `linear-gradient(to right, ${couleurs.join(', ')})` }} />
       <div className="bornes"><span>0 m</span><span>{max / 2} m</span><span>{max} m</span></div>
-      <p className="source">→ sens des vagues · {champ.label}</p>
+      <p className="source">→ sens de la houle · {champ.label}</p>
     </div>
   );
 }

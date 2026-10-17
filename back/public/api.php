@@ -1,5 +1,5 @@
 <?php
-// API des prévisions de vagues du modèle IA
+// API des prévisions de houle du modèle IA
 // Lit data/predictions.csv, sortie du modèle au format d'entrée de front/scripts/champs.py
 // (une ligne par point de grille et par heure, time en ISO UTC sur la période de front/src/cadre.json) :
 //   time,lon,lat,hs,tp,dir

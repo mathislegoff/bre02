@@ -6,7 +6,7 @@ import iconeDeconnexion from '../assets/icones/deconnexion.svg';
 const LIENS = [
   ['carte', 'Carte'],
   ['ocean', 'Océan & littoral'],
-  ['equipe', 'Équipe'],
+  ['communaute', 'Communauté'],
 ];
 
 // Barre de navigation commune à toutes les pages (maquette Figma « Barre de navigation »), terminée par une vague

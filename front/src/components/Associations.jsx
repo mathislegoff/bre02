@@ -5,8 +5,8 @@ import { ASSOCIATIONS } from '../associations.js';
 function Logo({ asso }) {
   const [absent, setAbsent] = useState(false);
   return (
-    <span className="asso-logo" aria-hidden="true">
-      {absent ? asso.sigle : <img src={`${import.meta.env.BASE_URL}assos/${asso.logo}`} alt="" onError={() => setAbsent(true)} />}
+    <span className="asso-logo">
+      {absent ? asso.sigle : <img src={`${import.meta.env.BASE_URL}assos/${asso.logo}`} alt={`Logo : ${asso.nom}`} onError={() => setAbsent(true)} />}
     </span>
   );
 }
@@ -26,22 +26,6 @@ export default function Associations() {
           <Logo asso={a} />
           <Lien asso={a}>{a.nom}</Lien>
           <span>{a.texte}</span>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-// Bandeau de logos seuls, pour la présentation
-export function LogosAssociations() {
-  return (
-    <ul className="assos-logos">
-      {ASSOCIATIONS.map((a) => (
-        <li key={a.id}>
-          <a href={a.url} target="_blank" rel="noopener noreferrer" title={a.nom}>
-            <Logo asso={a} />
-            <span className="sr-only">{a.nom} (nouvel onglet)</span>
-          </a>
         </li>
       ))}
     </ul>

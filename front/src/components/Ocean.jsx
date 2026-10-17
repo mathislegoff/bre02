@@ -25,7 +25,7 @@ const PRATIQUES = [
 
 const CHIFFRES = [
   ['1', 'fichier vectoriel pour toute la côte, au lieu de milliers de tuiles'],
-  ['< 10 Ko', 'par heure de vagues sur toute la mer d’Iroise'],
+  ['< 10 Ko', 'par heure de houle sur toute la mer d’Iroise'],
   ['0', 'traceur, 0 publicité'],
   ['AA', 'contrastes WCAG 2.2, navigation au clavier'],
 ];
@@ -37,7 +37,7 @@ export default function Ocean() {
       <header className="ocean-tete">
         <p className="surtitre">Océan &amp; littoral</p>
         <h1>Profiter de l’océan, sans rien lui prendre.</h1>
-        <p>Trois réflexes avant d’aller à l’eau, et ce que Riklan rend au littoral.</p>
+        <p>Trois réflexes avant d’aller à l’eau, et ce que Riklañ rend au littoral.</p>
       </header>
       <img className="vague" src={vague} alt="" />
 
@@ -86,17 +86,6 @@ export default function Ocean() {
         <p className="urgence-titre">En cas d’urgence en mer</p>
         <div className="numero-urgence"><b>196</b><span>Sauvetage en mer (CROSS), gratuit depuis un portable</span></div>
         <div className="numero-urgence"><b>112</b><span>Numéro d’urgence européen</span></div>
-      </section>
-
-      <section className="rend">
-        <p className="grand-pourcentage" aria-hidden="true">[X] %</p>
-        <div className="engagement">
-          <h2>de nos bénéfices reversés chaque année à la protection du littoral breton.</h2>
-          <ul>
-            <li>Une wax sans pétrole, emballée sans plastique : en préparation.</li>
-            <li>Chaque année, on publie les montants et les associations soutenues.</li>
-          </ul>
-        </div>
       </section>
 
       <section className="sobre" aria-labelledby="sobre-titre">

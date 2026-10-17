@@ -1,5 +1,5 @@
-// Champs de vagues sur le maillage MARC : voir scripts/champs.py pour le format
-// (un fichier par paramètre : hs = hauteur en m, dir = direction d'où viennent les vagues en °)
+// Champs de houle sur le maillage MARC : voir scripts/champs.py pour le format
+// (un fichier par paramètre : hs = hauteur en m, dir = direction d'où vient la houle en °)
 import { useEffect, useState } from 'react';
 import { CONFIG } from '../config.js';
 import { chargeOctets } from './donnees.js';
@@ -37,7 +37,7 @@ export function useChampHeure(champ, heure) {
         if (!actif) return;
         setValeurs(Object.fromEntries(params(champ).map((p, k) => [p, blocs[k].subarray(h * n, (h + 1) * n)])));
       })
-      .catch((e) => console.error('Champ de vagues :', e));
+      .catch((e) => console.error('Champ de houle :', e));
     if ((j + 1) * 24 < champ.heures) params(champ).forEach((p) => jour(champ, p, j + 1).catch(() => {})); // pour la lecture
     return () => { actif = false; };
   }, [champ, heure]);
@@ -73,12 +73,12 @@ export const COULEURS = Array.from({ length: max / pas }, (_, k) => {
 });
 export const classe = (m) => Math.min(COULEURS.length - 1, Math.floor(m / pas));
 
-// Direction (d'où viennent les vagues) → flèche et point cardinal
+// Direction (d'où vient la houle) → flèche et point cardinal
 const POINTS = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
 export const cardinal = (deg) => POINTS[Math.round(deg / 45) % 8];
 
-// Vagues au plus proche nœud MARC ayant une valeur à l'heure affichée (≤ MAX_KM) :
-// undefined tant que le champ charge, null s'il n'y a rien à proximité, sinon { hs (m), dir (° d'où viennent les vagues), km, noeud }
+// Houle au plus proche nœud MARC ayant une valeur à l'heure affichée (≤ MAX_KM) :
+// undefined tant que le champ charge, null s'il n'y a rien à proximité, sinon { hs (m), dir (° d'où vient la houle), km, noeud }
 const MAX_KM = 15;
 export function vaguesAuPoint(grille, champ, valeurs, lat, lon) {
   if (!grille || !champ || !valeurs) return undefined;

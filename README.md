@@ -1,6 +1,6 @@
 # Ocean Hackathon 2026
 
-- projet vague IA
+- projet houle IA
 
 Pour lancer l'interface : se placer dans le dossier `front` et taper `npm start`.
 

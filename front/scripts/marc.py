@@ -2,7 +2,7 @@
 # Champs MARC (WW3 NORGAS-UG, Ifremer/SHOM) sur le maillage de la carte → public/data/champs/marc/ (format de champs.py)
 #
 # hs  : hauteur significative (m)
-# dir : direction moyenne d'où viennent les vagues (°, convention nautique)
+# dir : direction moyenne d'où vient la houle (°, convention nautique)
 #
 # Les fichiers mensuels font ~3 Go (110 804 nœuds, 70 variables) : on ne lit que hs et dir, pas de temps par
 # pas de temps, via des requêtes HTTP Range (≈ 125 Ko par pas et par variable, ≈ 2 Go pour l'année).

@@ -3,6 +3,7 @@ import { CONFIG } from './config.js';
 import Header from './components/Header.jsx';
 import Accueil from './components/Accueil.jsx';
 import Ocean from './components/Ocean.jsx';
+import Communaute from './components/Communaute.jsx';
 import Connexion from './components/Connexion.jsx';
 import Footer from './components/Footer.jsx';
 import MapView from './components/MapView.jsx';
@@ -12,20 +13,9 @@ import Graphique from './components/Graphique.jsx';
 import { useJSON } from './lib/donnees.js';
 import { useChampHeure, useSerieNoeud, vaguesAuPoint } from './lib/champ.js';
 import { date, formatComplet } from './lib/temps.js';
+import { api } from './lib/api.js';
 
-// Appel au backend PHP ; une réponse d'erreur devient une exception avec le message du serveur
-async function api(url, body, method = body ? 'POST' : 'GET') {
-  const r = await fetch(url, {
-    method,
-    headers: { 'Content-Type': 'application/json' },
-    body: body && JSON.stringify(body),
-  });
-  const data = await r.json().catch(() => ({ erreur: 'Serveur injoignable' }));
-  if (!r.ok) throw new Error(data.erreur);
-  return data;
-}
-
-// Page affichée, lue dans le # de l'adresse : #/ (accueil), #/carte, #/ocean, #/ocean/amp (ancre dans la page), #/equipe
+// Page affichée, lue dans le # de l'adresse : #/ (accueil), #/carte, #/ocean, #/ocean/amp (ancre dans la page), #/communaute
 function usePage() {
   const lire = () => {
     const [page = '', ancre] = location.hash.replace(/^#\/?/, '').split('/');
@@ -44,18 +34,6 @@ function usePage() {
     else document.querySelector('.page')?.scrollTo(0, 0);
   }, [page, ancre]);
   return page;
-}
-
-function BientotPage({ titre }) {
-  return (
-    <div className="page">
-      <section className="bientot">
-        <h1>{titre}</h1>
-        <p>Cette page arrive bientôt.</p>
-      </section>
-      <Footer />
-    </div>
-  );
 }
 
 const coords = (lat, lon) => `${lat.toFixed(3)}°N ${Math.abs(lon).toFixed(3)}°O`;
@@ -98,7 +76,7 @@ export default function App() {
   const valeurs = useChampHeure(champ, heure);
   const heureTexte = `${formatComplet.format(date(heure))} TU`;
 
-  // Vagues au point sélectionné (nœud MARC le plus proche), et sa courbe sur l'année
+  // Houle au point sélectionné (nœud MARC le plus proche), et sa courbe sur l'année
   const vagues = useMemo(() => sel && vaguesAuPoint(grille, champ, valeurs, sel.lat, sel.lon), [sel, grille, champ, valeurs]);
   const serie = useSerieNoeud(champ, sel && sel.type !== 'bouee' ? vagues?.noeud ?? null : null);
 
@@ -200,7 +178,7 @@ export default function App() {
       <Timeline heure={heure} setHeure={setHeure} />
       {sel && (
         <Graphique
-          titre={`Hauteur des vagues · ${sel.nom}`}
+          titre={`Hauteur de la houle · ${sel.nom}`}
           series={series}
           attente={sel.type !== 'bouee' && !!champ && !serie}
           heure={heure}
@@ -219,14 +197,14 @@ export default function App() {
       {page === 'accueil' ? (
         // Présentation, sans barre de navigation
         <div className="page">
-          <Accueil onVoirCarte={voirCarte} />
+          <Accueil onVoirCarte={voirCarte} comparaison={comparaison} />
         </div>
       ) : (
         <>
           <Header page={page} {...nav} />
           {page === 'carte' && <main className="page-carte">{carte}</main>}
           {page === 'ocean' && <Ocean />}
-          {page === 'equipe' && <BientotPage titre="Équipe & RGPD" />}
+          {page === 'communaute' && <Communaute utilisateur={utilisateur} onConnexion={ouvrirConnexion} />}
         </>
       )}
     </div>

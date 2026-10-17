@@ -2,7 +2,7 @@
 # État de mer en 2013 à la bouée des Pierres Noires : mesures in situ vs prévision MARC vs IA
 # → public/data/pierres-noires-2013.json
 #
-# Paramètres comparés (mêmes conventions des deux côtés, direction = d'où viennent les vagues) :
+# Paramètres comparés (mêmes conventions des deux côtés, direction = d'où vient la houle) :
 #   hs  : hauteur significative (m)   CANDHIS HM0     MARC hs
 #   tp  : période au pic (s)          CANDHIS TP      MARC 1/fp
 #   t02 : période moyenne (s)         CANDHIS T02     MARC 1/f02

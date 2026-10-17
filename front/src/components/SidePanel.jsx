@@ -157,7 +157,7 @@ function Fiche({ sel, vagues, bouee, heureTexte, onClose, ...favoris }) {
         </>
       )}
       {sel.pin ? <NotesFavori key={sel.pin.id} pin={sel.pin} {...favoris} /> : <BoutonFavori key={sel.cle} sel={sel} {...favoris} />}
-      {props && <p className="note">Sources : vagues MARC, qualité de l’eau ARS, zones protégées OFB.</p>}
+      {props && <p className="note">Sources : houle MARC, qualité de l’eau ARS, zones protégées OFB.</p>}
     </section>
   );
 }

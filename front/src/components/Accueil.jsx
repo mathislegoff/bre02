@@ -1,30 +1,27 @@
 import { CONFIG } from '../config.js';
-import AvantApres from './AvantApres.jsx';
-import Associations, { LogosAssociations } from './Associations.jsx';
-
-// Source de chaque courbe, avec la couleur utilisée dans les graphiques de la carte
-const REGARDS = [
-  ['mesure', 'Les mesures', 'Bouées CANDHIS (Cerema), au large.'],
-  ['marc', 'Le modèle physique', 'MARC (Ifremer/SHOM), sur toute la mer d’Iroise.'],
-  ['ia', 'Notre IA', 'Elle apprend des deux, pour mieux coller à la réalité.'],
-];
-
-// Ce qu'on veut ajouter ensuite (pitch du hackathon) : seul le partage de favoris entre comptes existe déjà
-const A_VENIR = [
-  ['Alertes', 'Bientôt', 'Une houle trop forte pour ton niveau, ou les conditions que tu attends : Riklan te prévient. Tu fixes tes seuils sur chacun de tes points.'],
-  ['Communauté', 'En partie', 'Crée un groupe privé avec ta bande : vous y partagez vos points, vos sorties et vos notes, jamais en public. Le partage de favoris entre comptes fonctionne déjà.'],
-  ['Covoiturage', 'Bientôt', 'Propose une place pour emmener ou ramener quelqu’un jusqu’au spot : moins de voitures sur la côte, plus de monde à l’eau.'],
-];
+import { useEffect, useState } from 'react';
+import { api } from '../lib/api.js';
+import Comparaison from './Comparaison.jsx';
+import { Sortie } from './Sorties.jsx';
+import Associations from './Associations.jsx';
+import Footer from './Footer.jsx';
+import vague from '../assets/vague.svg';
+import phoque from '../assets/phoque.png';
+import basHome from '../assets/bas-home.jpg';
 
 // Présentation en haut de la page, sans barre de navigation : le titre et le logo, la comparaison avec / sans IA et la
 // protection de l'océan. « Voir la carte » ouvre la page de la carte.
-export default function Accueil({ onVoirCarte }) {
+export default function Accueil({ onVoirCarte, comparaison }) {
+  // Prochaines sorties des communautés publiques (masquées si le serveur ne répond pas)
+  const [sorties, setSorties] = useState([]);
+  useEffect(() => { api('/annonces.php').then((l) => setSorties(l.slice(0, 3))).catch(() => {}); }, []);
+
   return (
     <div className="accueil">
       <section className="hero">
         <img className="logo-hero" src={CONFIG.logo} alt="" />
         <h1>{CONFIG.name}</h1>
-        <p className="accroche">Des prévisions de vagues par IA, pour surfer sans abîmer l’océan.</p>
+        <p className="accroche">Prévoir la houle, surfer ensemble, protéger l’océan.</p>
       
         <button className="btn-carte" onClick={onVoirCarte}>
           Voir la carte
@@ -32,47 +29,34 @@ export default function Accueil({ onVoirCarte }) {
             <svg viewBox="0 0 24 24" width="20" height="20"><path d="M5 12h14m0 0-6-6m6 6-6 6" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </span>
         </button>
-        <div className="allies">
-          <p className="petit">Pour surfer sans abîmer l’océan, on s’appuie sur elles et on renvoie vers elles :</p>
-          <LogosAssociations />
-        </div>
       </section>
+
+      {/* Transition sous « Voir la carte » : de la plage vers la mer, en pâte à modeler */}
+      <img className="bas-home" src={basHome} alt="Une plage de sable et de galets qui descend vers la mer, en pâte à modeler" />
+
+      {sorties.length > 0 && (
+        <section className="sorties-accueil" aria-labelledby="sorties-accueil-titre">
+          <h2 id="sorties-accueil-titre">Surfer ensemble, près de chez toi</h2>
+          <p className="intro">Des communautés locales proposent des sorties et des places en voiture. Pas de chat : on répond « je viens ».</p>
+          <ul className="sorties">{sorties.map((s) => <Sortie key={s.id} s={s} compact />)}</ul>
+          <a className="btn" href="#/communaute">Voir toutes les sorties</a>
+        </section>
+      )}
 
       <section className="comparaison" aria-labelledby="ia-titre">
-        <h2 id="ia-titre">Avec l’IA, la prévision colle mieux à la réalité</h2>
-        <p className="intro">Fais glisser le curseur : à gauche la prévision du modèle physique seul, à droite celle de notre IA, sur la même carte.</p>
-        <AvantApres />
-        <ul className="regards">
-          {REGARDS.map(([cle, titre, texte]) => (
-            <li key={cle}>
-              <i style={{ background: CONFIG.series[cle].color }} />
-              <div>
-                <strong>{titre}</strong>
-                <span>{texte}</span>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section className="a-venir" aria-labelledby="venir-titre">
-        <h2 id="venir-titre">Prévenir, partager, bouger ensemble</h2>
-        <p className="intro">Riklan est un prototype de hackathon : voici où on veut aller.</p>
-        <dl className="lignes">
-          {A_VENIR.map(([titre, etat, texte]) => (
-            <div key={titre} className="ligne">
-              <dt>{titre} <span className="etat">{etat}</span></dt>
-              <dd>{texte}</dd>
-            </div>
-          ))}
-        </dl>
+        <h2 id="ia-titre">La houle, mesurée et prévue</h2>
+        <p className="intro">Ce que mesure la bouée, ce que prévoit le modèle physique et, à terme, notre IA : plus une courbe colle à celle de la bouée, meilleure est la prévision.</p>
+        <div className="cadre-argile">
+          <Comparaison comparaison={comparaison} />
+        </div>
       </section>
 
       <section className="environnement" aria-labelledby="env-titre">
         <h2 id="env-titre">Le surf vit de l’océan, alors on le protège</h2>
+        <div className="env-haut">
         <div className="env-texte">
           <p>
-            Les surfeurs sont aux premières loges : déchets sur la plage, eau qui se dégrade, dunes piétinées. Riklan montre sur chaque
+            Les surfeurs sont aux premières loges : déchets sur la plage, eau qui se dégrade, dunes piétinées. Riklañ montre sur chaque
             spot la qualité de l’eau et les zones protégées, pour surfer en connaissance de cause.
           </p>
           <p>
@@ -86,8 +70,16 @@ export default function Accueil({ onVoirCarte }) {
           </p>
           <p><a href="#/ocean">Voir les bonnes pratiques du surfeur</a></p>
         </div>
+        <img className="phoque" src={phoque} alt="Un phoque en pâte à modeler" />
+        </div>
         <Associations />
       </section>
+
+      {/* Fin de page : une vague, puis les crédits sur fond mer (plus de grand blanc en bas) */}
+      <img className="vague-fin" src={vague} alt="" />
+      <div className="fin-accueil">
+        <Footer />
+      </div>
     </div>
   );
 }

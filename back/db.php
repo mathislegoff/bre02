@@ -49,6 +49,10 @@ if ($version < 2) {
     $db->exec('PRAGMA user_version = 2');
 }
 
+// Communautés et sorties
+require __DIR__ . '/schema_communaute.php';
+schema_communaute($db);
+
 // POST en JSON seulement : un formulaire d'un autre site ne peut envoyer ni ce type, ni PATCH/DELETE, sans autorisation (CSRF)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !str_starts_with($_SERVER['CONTENT_TYPE'] ?? '', 'application/json')) {
     http_response_code(415);

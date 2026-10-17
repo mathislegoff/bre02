@@ -58,10 +58,10 @@ const SENS = ['du nord', 'du nord-est', 'de l’est', 'du sud-est', 'du sud', 'd
 const maj = (t) => t[0].toUpperCase() + t.slice(1);
 const sens = (deg) => SENS[Math.round(deg / 45) % 8];
 
-// Rose de direction (Figma « Rose de direction ») : graduations tous les 30°, flèche = vers où vont les vagues
+// Rose de direction (Figma « Rose de direction ») : graduations tous les 30°, flèche = vers où va la houle
 function Rose({ dir, taille = 72 }) {
   return (
-    <svg className="rose" width={taille} height={taille} viewBox="-50 -50 100 100" role="img" aria-label={`Vagues venant de ${Math.round(dir)}°`}>
+    <svg className="rose" width={taille} height={taille} viewBox="-50 -50 100 100" role="img" aria-label={`Houle venant de ${Math.round(dir)}°`}>
       <circle r="47" fill="none" stroke="var(--line)" strokeWidth="2" />
       {Array.from({ length: 12 }, (_, i) => (
         <line key={i} y1="-47" y2={i % 3 ? -41 : -38} stroke="var(--muted)" strokeWidth="1.5" transform={`rotate(${i * 30})`} />
@@ -77,17 +77,17 @@ function Rose({ dir, taille = 72 }) {
   );
 }
 
-// Vagues à l'heure choisie sur la timeline : hauteur, niveau (jauge 0 à max m) et direction de la houle (MARC)
+// Houle à l'heure choisie sur la timeline : hauteur, niveau (jauge 0 à max m) et direction (MARC)
 export function Vagues({ vagues, quand, source = 'MARC', compact }) {
   const { max, couleurs } = CONFIG.echelle;
-  if (vagues === undefined) return <p className="muted">Chargement des vagues…</p>;
-  if (vagues === null) return <p className="muted">{source === 'CANDHIS' ? 'Pas de mesure à cette heure.' : 'Pas de donnée de vagues à moins de 15 km de ce spot.'}</p>;
+  if (vagues === undefined) return <p className="muted">Chargement de la houle…</p>;
+  if (vagues === null) return <p className="muted">{source === 'CANDHIS' ? 'Pas de mesure à cette heure.' : 'Pas de donnée de houle à moins de 15 km de ce spot.'}</p>;
   const { hs, dir } = vagues;
   const n = niveau(hs);
   return (
     <div className="vagues">
       <div className="info-ligne">
-        <span className="info-cle">Vagues · {source}{quand && ` · ${quand}`}</span>
+        <span className="info-cle">Houle · {source}{quand && ` · ${quand}`}</span>
       </div>
       <div className="vagues-haut">
         <strong className="hs">{fmt(hs)} <small>m</small></strong>
@@ -105,7 +105,7 @@ export function Vagues({ vagues, quand, source = 'MARC', compact }) {
           <div>
             <strong>{maj(sens(dir))} · {Math.round(dir)}°</strong>
             {vagues.tp != null && <p>Période pic : {fmt(vagues.tp)} s</p>}
-            <p className="muted">Direction d’où viennent les vagues (la flèche montre où elles vont).{vagues.km != null && ` Point MARC à ${Math.round(vagues.km)} km.`}</p>
+            <p className="muted">Direction d’où vient la houle (la flèche montre où elle va).{vagues.km != null && ` Point MARC à ${Math.round(vagues.km)} km.`}</p>
           </div>
         </div>
       )}

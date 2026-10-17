@@ -29,7 +29,7 @@ export default function Connexion({ onCompte, onFermer }) {
         <h2 id="connexion-titre">Compte facultatif</h2>
         <button className="close" onClick={() => ref.current.close()} aria-label="Fermer">×</button>
       </div>
-      <p className="muted">Riklan s’utilise sans compte. Un compte sert seulement à garder tes favoris et à les partager.</p>
+      <p className="muted">Riklañ s’utilise sans compte. Un compte sert seulement à garder tes favoris et à les partager.</p>
       <form className="compte" onSubmit={submit}>
         <input name="nom" placeholder="Nom" aria-label="Nom" autoComplete="username" required autoFocus />
         <input name="mdp" type="password" placeholder="Mot de passe" aria-label="Mot de passe" autoComplete="current-password" required />

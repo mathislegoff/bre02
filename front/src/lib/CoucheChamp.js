@@ -1,4 +1,4 @@
-// Couche Leaflet : triangles du maillage MARC colorés selon la hauteur des vagues, et flèches de direction.
+// Couche Leaflet : triangles du maillage MARC colorés selon la hauteur de la houle, et flèches de direction.
 // Un seul <canvas>, une passe de remplissage par classe de couleur (≈ 18 000 triangles, quelques ms).
 import L from 'leaflet';
 import { COULEURS, classe, valeur } from './champ.js';
@@ -92,7 +92,7 @@ export const CoucheChamp = L.Layer.extend({
       const cle = `${Math.floor((px[i] + origine.x) / ECART_FLECHES)},${Math.floor((py[i] + origine.y) / ECART_FLECHES)}`;
       if (vues.has(cle)) continue;
       vues.add(cle);
-      // Les vagues viennent de `dir` : la flèche pointe vers où elles vont
+      // La houle vient de `dir` : la flèche pointe vers où elle va
       const a = ((valeur(champ, 'dir', dir[i]) + 180) * Math.PI) / 180;
       const dx = Math.sin(a), dy = -Math.cos(a);
       const [x0, y0, x1, y1] = [px[i] - dx * 7, py[i] - dy * 7, px[i] + dx * 7, py[i] + dy * 7];
