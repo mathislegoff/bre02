@@ -31,8 +31,10 @@ export function useChampHeure(champ, heure) {
   useEffect(() => {
     if (!champ) return;
     let actif = true;
-    const j = Math.floor(heure / 24);
-    const h = heure - j * 24;
+    const hf = heure - (champ.decalage ?? 0); // heure dans le fichier (le champ de démo ne couvre que 48 h)
+    if (hf < 0 || hf >= champ.heures) return;
+    const j = Math.floor(hf / 24);
+    const h = hf - j * 24;
     const n = champ.noeuds;
     Promise.all(paramsCarte(champ).map((p) => jour(champ, p, j)))
       .then((blocs) => {
@@ -56,7 +58,8 @@ export function useSerieNoeud(champ, noeud) {
     Promise.all(params(champ).map((p) => chargeOctets(`${champ.url}${p}.noeuds.bin`, noeud * T, (noeud + 1) * T, controller.signal)))
       .then((blocs) => setSerie({
         noeud,
-        v: Object.fromEntries(params(champ).map((p, k) => [p, Array.from(blocs[k], (q) => valeur(champ, p, q))])),
+        // Séries indexées par heure depuis le début de la période : le champ de démo ne couvre qu'une fenêtre, le reste est vide
+        v: Object.fromEntries(params(champ).map((p, k) => [p, [...Array(champ.decalage ?? 0).fill(null), ...Array.from(blocs[k], (q) => valeur(champ, p, q))]])),
       }))
       .catch((e) => e.name !== 'AbortError' && console.error('Série du nœud :', e));
     return () => controller.abort();

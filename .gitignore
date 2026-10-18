@@ -8,5 +8,7 @@ front/scripts/sources/TCH_FRA_V2/
 front/scripts/sources/carte-shom-7066.png
 # Champs de vagues (≈ 80 Mo par fichier) : régénérer avec scripts/marc.py (et scripts/champs.py pour l’IA)
 front/public/data/champs/*/*.bin
+# … sauf le champ des 48 h de la démo (~1,9 Mo) : le site marche après un git pull
+!front/public/data/champs/demo-48h/*.bin
 __pycache__/
 back/data/*.sqlite

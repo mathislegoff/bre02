@@ -31,14 +31,14 @@ const CHIFFRES = [
   ['AA', 'contrastes WCAG 2.2, navigation au clavier'],
 ];
 
-// Page « Océan & littoral » (Figma « Page — Océan & littoral ») + encart sur les aires marines protégées et bonnes pratiques
+// Page « Environnement » (Figma « Page — Océan & littoral ») + encart sur les aires marines protégées et bonnes pratiques
 export default function Ocean() {
   return (
     <div className="page ocean">
       <header className="ocean-tete">
-        <p className="surtitre">Océan &amp; littoral</p>
-        <h1>Profiter de l’océan, sans rien lui prendre.</h1>
-        <p>Trois réflexes avant d’aller à l’eau, et ce que Riklañ rend au littoral.</p>
+        <p className="surtitre">Environnement</p>
+        <h1>Profiter de la nature, sans rien lui prendre.</h1>
+        <p>Trois réflexes avant d’aller à l’eau, et ce que Riklañ fait pour l’environnement.</p>
       </header>
       <img className="vague" src={vague} alt="" />
 
@@ -70,7 +70,7 @@ export default function Ocean() {
 
       <section className="ocean-bloc" id="pratiques" aria-labelledby="pratiques-titre">
         <h2 id="pratiques-titre">Les bonnes pratiques du surfeur</h2>
-        <p className="intro">Le surf s’est construit sur le respect de l’océan et des autres. Sept habitudes à garder.</p>
+        <p className="intro">Le surf s’est construit sur le respect de la nature et des autres. Sept habitudes à garder.</p>
         <dl className="lignes">
           {PRATIQUES.map(([titre, texte]) => (
             <div key={titre} className="ligne">
@@ -79,7 +79,7 @@ export default function Ocean() {
             </div>
           ))}
         </dl>
-        <h3 className="sous-titre">Agir avec celles et ceux qui protègent l’océan</h3>
+        <h3 className="sous-titre">Agir avec celles et ceux qui protègent l’environnement</h3>
         <Associations />
       </section>
 

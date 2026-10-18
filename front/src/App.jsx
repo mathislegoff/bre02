@@ -202,7 +202,7 @@ export default function App() {
       {page === 'accueil' ? (
         // Présentation, sans barre de navigation
         <div className="page">
-          <Accueil onVoirCarte={voirCarte} comparaison={comparaison} />
+          <Accueil onVoirCarte={voirCarte} />
         </div>
       ) : (
         <>

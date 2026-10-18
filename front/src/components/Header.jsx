@@ -5,7 +5,7 @@ import iconeDeconnexion from '../assets/icones/deconnexion.svg';
 
 const LIENS = [
   ['carte', 'Carte'],
-  ['ocean', 'Océan & littoral'],
+  ['ocean', 'Environnement'],
   ['communaute', 'Communauté'],
 ];
 

@@ -7,7 +7,7 @@ export default function Footer() {
         <p className="mini">Carte © SHOM · Houle : MARC (Ifremer) · Bouées : CANDHIS (Cerema)</p>
       </div>
       <nav aria-label="Pied de page">
-        <a href="#/ocean">Océan &amp; littoral</a>
+        <a href="#/ocean">Environnement</a>
         <a href="#/communaute">Communauté &amp; RGPD</a>
         <a href="#/communaute">Contact</a>
       </nav>

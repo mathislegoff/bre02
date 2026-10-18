@@ -49,9 +49,10 @@ ia["hs"] = [
     None if h is None else round(max(0.1, h * (1 - 0.025 * min(h, 6)) + e), 2)  # pics sous-estimés de 2,5 % par mètre, jusqu'à 15 %
     for h, e in zip(hs_lisse, erreur_lente(lambda i: 0.28 + 0.05 * (hs[i] or 0), phi=0.98))
 ]
-for param, sigma in (("tp", 0.55), ("t02", 0.35)):
-    vals = [base(param, i) for i in range(n)]
-    ia[param] = [None if v is None else round(max(3.0, v + e), 1) for v, e in zip(vals, erreur_lente(lambda i, s=sigma: s))]
+tp = lisse([base("tp", i) for i in range(n)], demi=6)  # la période de l'IA est lissée, mais moins précise que MARC
+ia["tp"] = [None if v is None else round(max(3.0, v + e), 1) for v, e in zip(tp, erreur_lente(lambda i: 1.7, phi=0.97))]
+t02 = [base("t02", i) for i in range(n)]
+ia["t02"] = [None if v is None else round(max(3.0, v + e), 1) for v, e in zip(t02, erreur_lente(lambda i: 0.9, phi=0.97))]
 dirs = [base("dir", i) for i in range(n)]
 ia["dir"] = [None if v is None else round((v + e) % 360, 1) for v, e in zip(dirs, erreur_lente(lambda i: 7.0))]
 
@@ -61,8 +62,8 @@ with open(FICHIER, "w", encoding="utf-8") as f:
     json.dump(d, f, ensure_ascii=False, separators=(",", ":"))
 
 
-def ecarts(sim):
-    paires = [(m, s) for m, s in zip(mesure["hs"], sim) if m is not None and s is not None]
+def ecarts(ref, sim):
+    paires = [(m, s) for m, s in zip(ref, sim) if m is not None and s is not None]
     rmse = math.sqrt(sum((s - m) ** 2 for m, s in paires) / len(paires))
     mm, ms = (sum(x) / len(paires) for x in zip(*paires))
     cov = sum((m - mm) * (s - ms) for m, s in paires)
@@ -70,6 +71,7 @@ def ecarts(sim):
     return rmse, ms - mm, r
 
 
-for nom, sim in (("MARC", marc["hs"]), ("IA (démo)", ia["hs"])):
-    rmse, biais, r = ecarts(sim)
-    print(f"{nom:10s} écart moyen {rmse:.2f} m · biais {biais:+.2f} m · corrélation {r:.2f}")
+for param, unite in (("hs", "m"), ("tp", "s")):
+    for nom, sim in (("MARC", marc[param]), ("IA (démo)", ia[param])):
+        rmse, biais, r = ecarts(mesure[param], sim)
+        print(f"{param} {nom:10s} écart moyen {rmse:.2f} {unite} · biais {biais:+.2f} {unite} · corrélation {r:.2f}")
