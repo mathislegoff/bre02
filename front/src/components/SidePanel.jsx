@@ -154,7 +154,7 @@ function Fiche({ sel, vagues, bouee, serie, heure, graph, onGraph, onClose, ...f
         <Vagues vagues={vagues} />
       )}
       {sel.pin && !sel.pin.partage_par && (
-        <Alerte key={sel.pin.id} pin={sel.pin} serie={serie} heure={heure} onAlerte={favoris.onAlerte} />
+        <Alerte key={`alerte-${sel.pin.id}`} pin={sel.pin} serie={serie} heure={heure} onAlerte={favoris.onAlerte} />
       )}
       {/* Figma « Panneau spot » : bouton principal « Voir le détail » ; ici, le détail est la courbe sous la carte */}
       {!graph && <button className="btn" onClick={onGraph}>Voir le détail</button>}
@@ -164,7 +164,7 @@ function Fiche({ sel, vagues, bouee, serie, heure, graph, onGraph, onClose, ...f
           <AiresProtegees amp={props.amp} complet />
         </>
       )}
-      {sel.pin ? <NotesFavori key={sel.pin.id} pin={sel.pin} {...favoris} /> : <BoutonFavori key={sel.cle} sel={sel} {...favoris} />}
+      {sel.pin ? <NotesFavori key={`notes-${sel.pin.id}`} pin={sel.pin} {...favoris} /> : <BoutonFavori key={`ajout-${sel.cle}`} sel={sel} {...favoris} />}
       {props && <p className="note">Sources : houle MARC, qualité de l’eau ARS, zones protégées OFB.</p>}
     </section>
   );

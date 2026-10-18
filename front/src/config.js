@@ -26,6 +26,9 @@ export const CONFIG = {
     attribution: "Trait de côte © Shom/IGN · Houle : CANDHIS (Cerema), MARC (Ifremer/SHOM)",
   },
   periode: { debut: Date.parse(cadre.debut), heures: cadre.heures },
+  // Frise du temps : « les prochaines 48 h ». Les données sont celles de 2013, donc « maintenant » est un instant de démonstration :
+  // le 23 déc. 2013 à 00 h TU, veille de la plus forte houle mesurée de l'année
+  fenetre: { debut: Math.round((Date.UTC(2013, 11, 23) - Date.parse(cadre.debut)) / 3600e3), heures: 48 },
 
   // Courbes du graphique (hauteur de la houle). visible: false → pas affichée
   series: {

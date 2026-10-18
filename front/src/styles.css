@@ -501,8 +501,8 @@ a { color: inherit; }
 .btn-icone img { width: 24px; height: 24px; }
 
 /* Accueil : le titre et le logo, sans barre de navigation */
-.hero { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 56px 24px 72px; text-align: center; }
-.logo-hero { width: min(300px, 60vw); height: auto; }
+.hero { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 0 24px 72px; text-align: center; }
+.logo-hero { width: min(250px, 55vw); height: auto; } /* collé en haut : on voit une plus grande partie de la plage dessous */
 .hero h1 { font: 400 clamp(56px, 9vw, 96px) / 1 'Bagel Fat One', system-ui, sans-serif; color: var(--violet); letter-spacing: 0.02em; }
 .hero .accroche { max-width: 24ch; font: 400 clamp(26px, 3.6vw, 40px) / 1.15 'Bagel Fat One', system-ui, sans-serif; } /* même police que les numéros d'urgence et le logo */
 .hero .intro { max-width: 62ch; color: var(--muted); }
@@ -626,7 +626,7 @@ a { color: inherit; }
 @media (max-width: 700px) { .ecarts > div { grid-template-columns: 1fr; gap: 4px; } }
 
 /* Accueil : la plage en pâte à modeler sous « Voir la carte », pleine largeur, comme une transition vers la suite */
-.hero { padding-bottom: 32px; }
+.hero { padding-bottom: 16px; }
 .bas-home { display: block; width: 100%; height: auto; margin-bottom: 24px; mix-blend-mode: multiply; } /* fond blanc de la photo fondu dans la page */
 
 /* Communauté : trajets, communautés et formulaires (listes sans filets : l'espace sépare les lignes) */
@@ -659,3 +659,5 @@ a { color: inherit; }
   .deux-formulaires { grid-template-columns: 1fr; }
   .formulaire { grid-template-columns: 1fr; }
 }
+
+.timeline-fenetre { flex: none; font-weight: 600; font-size: var(--fs-sm); white-space: nowrap; }

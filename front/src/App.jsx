@@ -64,7 +64,7 @@ export default function App() {
   const champ = useMemo(() => index && { ...index, url: CONFIG.data.champ }, [index]);
   const station = comparaison?.station;
 
-  const [heure, setHeure] = useState(0);
+  const [heure, setHeure] = useState(CONFIG.fenetre.debut); // début des prochaines 48 h
   const [choix, setChoix] = useState(null); // { type: spot | mer | bouee | favori, … }
   const [utilisateur, setUtilisateur] = useState(null);
   const [pins, setPins] = useState([]);

@@ -3,8 +3,8 @@
 # prévisions de l'équipe modèle (scripts/sources/ia_2013.csv + scripts/comparaison.py).
 #
 # Réalisme : la prévision part de la mesure de la bouée, avec une erreur lente (corrélée d'une heure à l'autre, comme une vraie
-# prévision) qui grandit avec l'état de mer ; elle sous-estime un peu les pics, comme tout modèle ; elle reste meilleure que MARC
-# sans être parfaite. Le fichier porte `"demo": ["ia"]` : le site affiche « données de démonstration » à côté de la courbe.
+# prévision) qui grandit avec l'état de mer ; elle sous-estime nettement les pics ; elle est LISSÉE (courbe stable, pas d'à-coups).
+# Assumé : l'IA est MOINS précise que MARC (le modèle physique est plus exact), mais bien plus légère à calculer et plus résiliente. Le fichier porte `"demo": ["ia"]` : le site affiche « données de démonstration » à côté de la courbe.
 # Usage : python3 scripts/ia_demo.py   (relançable ; mêmes valeurs à chaque fois)
 import json, math, os, random
 
@@ -23,7 +23,7 @@ def base(param, i):
     return v if v is not None else marc[param][i]
 
 
-def erreur_lente(sigma_de, phi=0.93):
+def erreur_lente(sigma_de, phi=0.95):
     """Erreur autocorrélée (AR(1)) : sigma_de(i) donne l'écart-type voulu à l'heure i."""
     e = 0.0
     for i in range(n):
@@ -33,9 +33,21 @@ def erreur_lente(sigma_de, phi=0.93):
 
 ia = {}
 hs = [base("hs", i) for i in range(n)]
+
+
+def lisse(valeurs, demi=3):
+    """Moyenne glissante sur 2×demi+1 heures : la courbe de l'IA est plus stable que la mesure, qui a des à-coups."""
+    out = []
+    for i in range(len(valeurs)):
+        v = [x for x in valeurs[max(0, i - demi):i + demi + 1] if x is not None]
+        out.append(sum(v) / len(v) if v else None)
+    return out
+
+
+hs_lisse = lisse(hs)
 ia["hs"] = [
-    None if h is None else round(max(0.1, h * (1 - 0.006 * min(h, 6)) + e), 2)  # pics un peu sous-estimés
-    for h, e in zip(hs, erreur_lente(lambda i: 0.09 + 0.05 * (hs[i] or 0)))
+    None if h is None else round(max(0.1, h * (1 - 0.025 * min(h, 6)) + e), 2)  # pics sous-estimés de 2,5 % par mètre, jusqu'à 15 %
+    for h, e in zip(hs_lisse, erreur_lente(lambda i: 0.28 + 0.05 * (hs[i] or 0), phi=0.98))
 ]
 for param, sigma in (("tp", 0.55), ("t02", 0.35)):
     vals = [base(param, i) for i in range(n)]
